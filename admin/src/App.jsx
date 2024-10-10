@@ -9,19 +9,17 @@ import Layout from "./components/shared/Layout";
 
 const App = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<NonAuthLayout />}>
-          <Route index element={<Login />} />
+    <Routes>
+      <Route path="/" element={<NonAuthLayout />}>
+        <Route index element={<Login />} />
+      </Route>
+      <Route path="/" element={<AuthLayout />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
         </Route>
-        <Route path="/" element={<AuthLayout />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-          </Route>
-        </Route>
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   );
 };
 
