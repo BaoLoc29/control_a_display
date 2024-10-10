@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import NonAuthLayout from "./layouts/NonAuthLayout/index.jsx";
 import AuthLayout from "./layouts/AuthLayout/index.jsx";
-import Employee from "./components/Employee.jsx";
+import Users from "./components/Users.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Layout from "./components/shared/Layout";
 
@@ -16,8 +16,8 @@ const App = () => {
         </Route>
         <Route path="/" element={<AuthLayout />}>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="employees" element={<Employee />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
           </Route>
         </Route>
       </Routes>
