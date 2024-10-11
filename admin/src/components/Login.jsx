@@ -1,9 +1,42 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Input, Form } from "antd";
 import { FiLogIn } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import { login as loginAction } from "../feature/user/userSlice";
+import { login } from "../services/user";
+import toast from "react-hot-toast";
+import {
+  saveTokenToLocalStorage,
+  saveUserToLocalStorage,
+} from "../utils/localstorage";
 
 const Login = () => {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.users.user);
+  console.log(user);
+  const onFinish = async (values) => {
+    try {
+      setLoading(true);
+      const result = await login(values);
+      dispatch(loginAction({ user: result.data.user }));
+      saveTokenToLocalStorage(result.data.accessToken);
+      saveUserToLocalStorage(result.data.user);
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (error) {
+      const errorMessage = error.response.data?.message || "Login faild!";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onFinishFailed = (errorInfo) => {
+    console.log("Login failed:", errorInfo);
+  };
   return (
     <div
       className="flex min-h-screen items-center justify-center px-6 py-12 lg:px-8"
@@ -28,7 +61,9 @@ const Login = () => {
             className="space-y-4 md:space-y-6"
             name="login"
             layout="vertical"
-            autoComplete="off"
+            initialValues={{}}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
           >
             <Form.Item
               label={<span className="font-bold">E-mail</span>}
@@ -99,7 +134,7 @@ const Login = () => {
             </div>
 
             <Button
-              // loading={loading}
+              loading={loading}
               icon={<FiLogIn fontSize={20} />}
               type="primary"
               htmlType="submit"

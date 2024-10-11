@@ -10,14 +10,14 @@ export const Login = async (req, res) => {
 
         const loginSchema = joi.object({
             email: joi.string().email().min(3).max(32).required().messages({
-                "string.email": "Định dạng email không hợp lệ!",
-                "string.min": "Email phải có ít nhất 3 ký tự!",
-                "string.max": "Email không được vượt quá 32 ký tự!"
+                "string.email": "Invalid email format!",
+                "string.min": "Email must have at least 3 characters!",
+                "string.max": "Email must not exceed 32 characters!"
             }),
             password: joi.string().min(6).max(32).required().messages({
-                "string.password": "Định dạng mật khẩu không hợp lệ!",
-                "string.min": "Mật khẩu phải có ít nhất 6 ký tự!",
-                "string.max": "Mật khẩu không được vượt quá 32 ký tự!"
+                "string.password": "Invalid password format!",
+                "string.min": "Password must have at least 6 characters!",
+                "string.max": "Password must not exceed 32 characters!"
             }),
         })
 
@@ -30,7 +30,7 @@ export const Login = async (req, res) => {
         }
         const findUser = await User.findOne({ email }).lean()
         if (!findUser) {
-            return res.status(402).json({ success: false, error: "Email không tồn tại!" })
+            return res.status(402).json({ success: false, error: "Email does not exist!" })
         }
 
         const checkPassword = compareSync(password, findUser.password)
@@ -45,14 +45,14 @@ export const Login = async (req, res) => {
         if (!checkPassword) {
             return res.status(401).json({
                 success: false,
-                error: "Mật khẩu không chính xác!"
+                error: "Incorrect password!"
             })
         }
 
         if (findUser) {
             return res.status(200).json({
                 success: true,
-                message: "Đăng nhập thành công.",
+                message: "Login successful.",
                 user: returnUser,
                 accessToken
             })
@@ -70,19 +70,18 @@ export const createUser = async (req, res) => {
 
         const createSchema = joi.object({
             name: joi.string().required().messages({
-                'string.empty': 'Tên người dùng là bắt buộc!',
+                'string.empty': 'Username is required!',
             }),
             email: joi.string().email().required().messages({
-                'string.email': 'Email không hợp lệ!',
-                'string.empty': 'Email là bắt buộc!',
+                'string.email': 'Invalid email!',
+                'string.empty': 'Email is required!',
             }),
             password: joi.string().min(6).required().messages({
-                'string.min': 'Mật khẩu phải có ít nhất 6 ký tự!',
-                'string.empty': 'Mật khẩu là bắt buộc!',
+                'string.min': 'Password must have at least 6 characters!',
+                'string.empty': 'Password is required!',
             }),
             role: joi.string().required().valid("editor", "super-admin").messages({
-                'string.empty': 'Vai trò là bắt buộc!',
-                // 'any.only': 'Vai trò không hợp lệ!',
+                'string.empty': 'Role is required!',
             })
 
         });
@@ -96,7 +95,7 @@ export const createUser = async (req, res) => {
 
         const findUser = await User.findOne({ email })
         if (findUser) {
-            return res.status(401).json({ message: "Email này đã được sử dụng!" })
+            return res.status(401).json({ success: false, message: "This email is already in use!" })
         }
 
         const salt = genSaltSync();
@@ -105,7 +104,8 @@ export const createUser = async (req, res) => {
         const result = await User.create({ ...data, password: hashedPassword })
 
         return res.status(200).json({
-            message: 'Tạo tài khoản thành công.',
+            success: true,
+            message: 'Account created successfully.',
             user: {
                 _id: result._id,
                 email: result.email
@@ -113,6 +113,26 @@ export const createUser = async (req, res) => {
         })
 
     } catch (error) {
+        return res.status(500).json({ success: false, message: error.message })
+    }
+}
+export const getUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id
+        const user = await User.findById(userId).select('-password')
+        return res.status(200).json({
+            user
+        })
+    } catch (error) {
         return res.status(500).json({ message: error.message })
+    }
+}
+export const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findById(userId);
+        return res.status(200).json({ user })
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 }

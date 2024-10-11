@@ -1,30 +1,31 @@
-import jwt from 'jsonwebtoken'
-import user from '../models/user.js'
+import jwt from 'jsonwebtoken';
+import user from '../models/user.js';
 
 const authentication = async (req, res, next) => {
     try {
-        const bearerToken = req.headers.authorization
+        const bearerToken = req.headers.authorization;
 
         if (!bearerToken) {
-            return res.status(401).json({ message: "Bạn chưa đăng nhập!" })
+            return res.status(401).json({ message: "You are not logged in!" });
         }
 
-        const token = bearerToken.split(" ")[1]
-        const decoded = jwt.verify(token, process.env.SECRET_KEY)
+        const token = bearerToken.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
         if (!decoded) {
-            return res.status(401).json({ message: "Token không hợp lệ!" })
+            return res.status(401).json({ message: "Invalid token!" });
         }
 
-        const userId = decoded.id
-        const findUser = await user.findById(userId)
+        const userId = decoded.id;
+        const findUser = await user.findById(userId);
         if (!findUser) {
-            return res.status(404).json({ message: "Người dùng không tồn tại!" })
+            return res.status(404).json({ message: "User not found!" });
         }
-        req.user = findUser
-        next()
+        req.user = findUser;
+        next();
     } catch (error) {
-        return res.status(500).json({ error })
+        return res.status(500).json({ error });
     }
-}
-export default authentication
+};
+
+export default authentication;

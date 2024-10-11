@@ -6,7 +6,7 @@ import { DASHBOARD_SIDEBAR_LINKS } from "../../lib/consts/navigation";
 import { Link, useLocation } from "react-router-dom";
 
 const linkClass =
-  "flex items-center gap-2 font-light px-3 py-2 hover:bg-blue-200 hover:no-underline active:bg-neutral-600 rounded-sm text-base";
+  "flex items-center gap-2 font-light px-3 py-2 hover:bg-blue-200 hover:no-underline active:bg-blue-200 rounded-sm text-base";
 
 function Sidebar() {
   const [open, setOpen] = useState(true);
