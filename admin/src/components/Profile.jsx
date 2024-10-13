@@ -10,9 +10,9 @@ const Profile = () => {
   const [activeButton, setActiveButton] = useState("info");
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
-  const [userProfile, setUserProfile] = useState(null);
+  const [userProfile, setUserProfile] = useState({});
   const initialValuesRef = useRef(null);
-  const naviagate = useNavigate();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const handleButtonClick = (button) => {
     setActiveButton(button === "info" ? "info" : "password");
@@ -35,24 +35,30 @@ const Profile = () => {
           initialValuesRef.current = result.data.user;
         }
       } catch (error) {
-        console.error("Không tìm thấy thông tin nhân viên!", error);
+        console.error("User is not found", error);
       }
     };
 
     getUser();
   }, [form]);
 
+  // edit user
   const handleEditUser = async (values) => {
     try {
       setLoading(true);
       const result = await editUser(userProfile._id, values);
-      setUserProfile(result.data.user);
-      setUserEmail(result.data.user.email);
-      setUserName(result.data.user.name);
-      toast.success("Cập nhật tài khoản thành công!");
+      if (result.data.success) {
+        setUserProfile(result.data.user);
+        setUserEmail(result.data.user.email);
+        setUserName(result.data.user.name);
+        toast.success("User information updated successfully.");
+        window.location.reload();
+      } else if (result.data.message) {
+        toast.error(result.data.message);
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Cập nhật tài khoản thất bại!");
+      toast.error("Failed to update user information!");
     } finally {
       setLoading(false);
     }
@@ -67,19 +73,24 @@ const Profile = () => {
         oldPassword,
         newPassword
       );
-      setUserProfile(result.data.user);
-      toast.success("Thay đổi mật khẩu thành công!");
-      naviagate("/");
+      if (result.data.success) {
+        setUserProfile(result.data.user);
+        toast.success("Change password successful!");
+        navigate("/");
+      } else {
+        const errorMessage = result.data.error || "Change password faild!";
+        toast.error(errorMessage);
+      }
     } catch (error) {
-      toast.error("Thay đổi mật khẩu thất bại!");
+      toast.error("Change password faild!");
     } finally {
       setLoading(false);
     }
   };
   return (
     <div>
-      <div className="flex flex-row gap-5 w-full">
-        <div className="w-[18rem] h-[22rem] rounded-sm flex flex-col">
+      <div className="flex flex-row gap-3 w-full">
+        <div className="w-[18rem] h-[22rem] rounded-sm flex flex-col pr-3 border-r border-neutral-300">
           <div className="flex gap-3 items-center">
             <img
               src="https://iconape.com/wp-content/png_logo_vector/user-circle.png"
@@ -120,7 +131,7 @@ const Profile = () => {
           </div>
         </div>
         <div
-          className={`info px-4 rounded-sm flex flex-col flex-1 ${
+          className={`info rounded-sm flex flex-col flex-1 ${
             activeButton === "info" ? "" : "hidden"
           }`}
         >
@@ -142,7 +153,7 @@ const Profile = () => {
                 },
               ]}
             >
-              <Input className="h-[2.75rem] text-base" />
+              <Input className="h-[2.75rem] text-base" loading={loading} />
             </Form.Item>
 
             <label htmlFor="email" className="block text-base font-bold">
@@ -162,7 +173,7 @@ const Profile = () => {
                 },
               ]}
             >
-              <Input className="h-[2.75rem] text-base" />
+              <Input className="h-[2.75rem] text-base" loading={loading} />
             </Form.Item>
 
             <label htmlFor="role" className="block text-base font-bold">
@@ -206,7 +217,10 @@ const Profile = () => {
                 },
               ]}
             >
-              <Input.Password className="h-[2.75rem] text-base" />
+              <Input.Password
+                className="h-[2.75rem] text-base"
+                loading={loading}
+              />
             </Form.Item>
 
             <label htmlFor="address" className="block text-base font-bold">
@@ -227,7 +241,10 @@ const Profile = () => {
                 },
               ]}
             >
-              <Input.Password className="h-[2.75rem] text-base" />
+              <Input.Password
+                className="h-[2.75rem] text-base"
+                loading={loading}
+              />
             </Form.Item>
 
             <label htmlFor="address" className="block text-base font-bold">
@@ -259,7 +276,10 @@ const Profile = () => {
                 }),
               ]}
             >
-              <Input.Password className="h-[2.75rem] text-base" />
+              <Input.Password
+                className="h-[2.75rem] text-base"
+                loading={loading}
+              />
             </Form.Item>
             <div className="w-1/3 flex justify-between">
               <button

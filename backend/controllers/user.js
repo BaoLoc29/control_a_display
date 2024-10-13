@@ -25,6 +25,7 @@ export const Login = async (req, res) => {
 
         if (validate.error) {
             return res.status(400).json({
+                success: false,
                 error: validate.error.details[0].message
             })
         }
@@ -36,7 +37,7 @@ export const Login = async (req, res) => {
         const checkPassword = compareSync(password, findUser.password)
         const accessToken = jwt.sign({
             id: findUser._id,
-        }, process.env.SECRET_KEY, { expiresIn: '1d' })
+        }, process.env.SECRET_KEY, { expiresIn: '5s' })
         const {
             password: userPassword,
             ...returnUser
@@ -52,7 +53,7 @@ export const Login = async (req, res) => {
         if (findUser) {
             return res.status(200).json({
                 success: true,
-                message: "Login successful.",
+                message: "Login successfully.",
                 user: returnUser,
                 accessToken
             })
@@ -89,6 +90,7 @@ export const createUser = async (req, res) => {
         const { error } = createSchema.validate(data)
         if (error) {
             return res.status(400).json({
+                success: false,
                 error: error.details.map((e) => e.message),
             });
         }
@@ -124,7 +126,7 @@ export const getUserProfile = async (req, res) => {
             user
         })
     } catch (error) {
-        return res.status(500).json({ message: error.message })
+        return res.status(500).json({ success: false, message: error.message })
     }
 }
 export const getUserById = async (req, res) => {
@@ -133,6 +135,117 @@ export const getUserById = async (req, res) => {
         const user = await User.findById(userId);
         return res.status(200).json({ user })
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
+export const changePassword = async (req, res) => {
+    const { compareSync, genSaltSync, hashSync } = bcrypt;
+    try {
+        const id = req.params.id;
+        const oldPassword = req.body.oldPassword;
+        const newPassword = req.body.newPassword;
+
+        const changePasswordSchema = joi.object({
+            oldPassword: joi.string().min(6).max(32).required().messages({
+                'string.empty': `Old password is required`,
+                'string.min': `Old password must be at least 6 characters long`,
+                'string.max': `Old password must be at most 32 characters long`,
+                'any.required': `Old password is required`
+            }),
+            newPassword: joi.string().min(6).max(32).required().messages({
+                'string.empty': `New password is required`,
+                'string.min': `New password must be at least 6 characters long`,
+                'string.max': `New password must be at most 32 characters long`,
+                'any.required': `New password is required`
+            })
+        });
+
+        const { error } = changePasswordSchema.validate({ oldPassword, newPassword });
+        if (error) {
+            return res.status(400).json({ success: false, error: error.details[0].message });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User does not exist!" });
+        }
+
+        const checkPassword = compareSync(oldPassword, user.password);
+        if (!checkPassword) {
+            return res.status(400).json({ success: false, message: "Old password is incorrect!" });
+        }
+
+        const salt = genSaltSync();
+        const hashPassword = hashSync(newPassword, salt);
+
+        await User.findByIdAndUpdate(id, {
+            password: hashPassword
+        }).select("-password");
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully.",
+        });
+    } catch (error) {
+        if (error.details) {
+            const errorMessage = error.details.map((detail) => detail.message).join(', ');
+            return res.status(400).json({ success: false, message: errorMessage });
+        } else {
+            return res.status(500).json({ success: false, message: "Password change failed!" });
+        }
+    }
+};
+export const editUser = async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        const { id } = req.params;
+
+        const editSchema = joi.object({
+            name: joi.string().required().messages({
+                'string.empty': 'User name is required!'
+            }),
+            email: joi.string().email().required().messages({
+                'string.email': 'Invalid email!',
+                'string.empty': 'Email is required!'
+            }),
+        });
+
+        const { error } = editSchema.validate({ name, email });
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                error: error.details.map(e => e.message)
+            });
+        }
+
+        const findUserByEmail = await User.findOne({ email });
+        if (findUserByEmail && findUserByEmail._id.toString() !== id) {
+            return res.status(400).json({ success: false, message: "Email is already in use. Please try using a different email!" });
+        }
+
+        const updateUser = await User.findByIdAndUpdate(id, {
+            name, email
+        }, { new: true }).select("-password");
+
+        if (!updateUser) {
+            return res.status(400).json({ success: false, message: "User does not exist!" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User information updated successfully.",
+            user: {
+                ...updateUser.toObject(),
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        if (error.details) {
+            const errorMessage = error.details.map((detail) => detail.message).join(', ');
+            return res.status(400).json({ success: false, message: errorMessage });
+        } else {
+            return res.status(500).json({ success: false, message: "Failed to update user information!" });
+        }
+    }
+};
+

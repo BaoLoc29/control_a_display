@@ -10,13 +10,13 @@ const authentication = async (req, res, next) => {
         }
 
         const token = bearerToken.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
 
-        if (!decoded) {
+        if (!verify) {
             return res.status(401).json({ message: "Invalid token!" });
         }
 
-        const userId = decoded.id;
+        const userId = verify.id;
         const findUser = await user.findById(userId);
         if (!findUser) {
             return res.status(404).json({ message: "User not found!" });
