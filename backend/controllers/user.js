@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs"
 import joi from "joi"
 import jwt from "jsonwebtoken"
 
+const formatCreatedAt = (date) => {
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 export const Login = async (req, res) => {
     const { compareSync } = bcrypt
     try {
@@ -37,7 +40,7 @@ export const Login = async (req, res) => {
         const checkPassword = compareSync(password, findUser.password)
         const accessToken = jwt.sign({
             id: findUser._id,
-        }, process.env.SECRET_KEY, { expiresIn: '5s' })
+        }, process.env.SECRET_KEY, { expiresIn: '9d' })
         const {
             password: userPassword,
             ...returnUser
@@ -110,7 +113,8 @@ export const createUser = async (req, res) => {
             message: 'Account created successfully.',
             user: {
                 _id: result._id,
-                email: result.email
+                email: result.email,
+                createdAt: formatCreatedAt(result.createdAt)
             }
         })
 
@@ -126,7 +130,7 @@ export const getUserProfile = async (req, res) => {
             user
         })
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 export const getUserById = async (req, res) => {
@@ -135,7 +139,7 @@ export const getUserById = async (req, res) => {
         const user = await User.findById(userId);
         return res.status(200).json({ user })
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 }
 export const changePassword = async (req, res) => {
@@ -236,6 +240,7 @@ export const editUser = async (req, res) => {
             message: "User information updated successfully.",
             user: {
                 ...updateUser.toObject(),
+                createdAt: formatCreatedAt(updateUser.createdAt)
             }
         });
     } catch (error) {
@@ -248,4 +253,59 @@ export const editUser = async (req, res) => {
         }
     }
 };
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByIdAndDelete(id);
+        if (!user) {
+            return res.status(400).json({ message: "User is not found!" })
+        }
+        return res.status(200).json({ message: "Deleted successfully!" })
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}
+export const getPagingUser = async (req, res) => {
+    try {
+        const query = req.query
+        const users = await User.find()
+            .skip(query.pageSize * query.pageIndex - query.pageSize)
+            .limit(query.pageSize).sort({ createdAt: "desc" })
 
+        const countUsers = await User.countDocuments()
+        const totalPage = Math.ceil(countUsers / query.pageSize)
+
+        const formattedUsers = users.map(user => ({
+            ...user.toObject(),
+            createdAt: formatCreatedAt(user.createdAt)
+        }));
+
+        return res.status(200).json({ users: formattedUsers, totalPage, count: countUsers })
+    } catch (error) {
+        return res.status(500).json(error)
+    }
+}
+export const searchUser = async (req, res) => {
+    try {
+        const { keyword, option } = req.body;
+
+        if (!keyword || !option) {
+            const noKeyword = await User.find()
+            return res.status(200).json({ noKeyword });
+        }
+
+        const users = await User.find();
+        if (!users || users.length === 0) {
+            return res.status(404).json({ message: "Người dùng không tồn tại!" });
+        }
+
+        const formattedUsers = users.map(user => ({
+            ...user.toObject(),
+            createdAt: formatCreatedAt(user.createdAt)
+        }));
+        return res.status(200).json({ users: formattedUsers });
+
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};

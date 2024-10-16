@@ -2,8 +2,8 @@ const saveTokenToLocalStorage = (token) => {
     localStorage.setItem("accessToken", token);
 }
 
-const removeTokenFromLocalStorage = (token) => {
-    localStorage.removeItem('accessToken', token);
+const removeTokenFromLocalStorage = () => {
+    localStorage.removeItem('accessToken');
 }
 
 const getTokenFromLocalStorage = () => {

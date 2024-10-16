@@ -12,6 +12,15 @@ const createUser = (data) => {
 const editUser = (userId, data) => {
     return axiosInstanceAuth.patch(`/user/edit-user/${userId}`, data)
 }
+const deleteUser = (userId) => {
+    return axiosInstanceAuth.delete(`/user/${userId}`)
+}
+const getPagingUser = ({ pageSize, pageIndex }) => {
+    return axiosInstanceAuth.get(`/user/get-paging-user?pageSize=${pageSize}&pageIndex=${pageIndex}`);
+}
+const searchUser = (keyword, option) => {
+    return axiosInstanceAuth.post('/user/search-user', { keyword, option });
+}
 const getUserProfile = () => {
     return axiosInstanceAuth.get('/user/get-user-profile')
 }
@@ -24,5 +33,8 @@ export {
     editUser,
     getUserProfile,
     changePassword,
-    getUserById
+    getUserById,
+    deleteUser,
+    getPagingUser,
+    searchUser,
 }

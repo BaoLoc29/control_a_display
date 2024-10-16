@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Input, Form } from "antd";
 import { FiLogIn } from "react-icons/fi";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { login as loginAction } from "../feature/user/userSlice";
 import { login } from "../services/user";
 import { toast } from "react-hot-toast";
@@ -16,8 +16,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.users.user);
-  console.log(user);
   const onFinish = async (values) => {
     try {
       setLoading(true);

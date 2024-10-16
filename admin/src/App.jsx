@@ -9,8 +9,8 @@ import NonAuthLayout from "./layouts/NonAuthLayout/index.jsx";
 import AuthLayout from "./layouts/AuthLayout/index.jsx";
 import isObjctEmpty from "./utils/isObjectEmpty";
 import Profile from "./components/Profile.jsx";
-import SessionExpiredPopup from "../src/components/SessionExpiredPopup/index.jsx";
 import Users from "./components/Users";
+import SessionExpiredPopup from "../src/components/SessionExpiredPopup/index.jsx";
 
 const App = () => {
   const user = useSelector((state) => state.users.user);
@@ -25,7 +25,9 @@ const App = () => {
     const handleSessionExpired = () => {
       setPopupVisible(true);
     };
+
     window.addEventListener("sessionExpired", handleSessionExpired);
+
     return () => {
       window.removeEventListener("sessionExpired", handleSessionExpired);
     };
@@ -40,7 +42,7 @@ const App = () => {
       <Routes>
         {isObjctEmpty(user) ? (
           <Route path="/" element={<NonAuthLayout />}>
-            <Route path="" element={<Login />} />
+            <Route index element={<Login />} />
           </Route>
         ) : (
           <Route path="/" element={<AuthLayout />}>

@@ -10,27 +10,40 @@ const linkClass =
 
 function Sidebar() {
   const [open, setOpen] = useState(true);
+  const [isPinned, setIsPinned] = useState(true);
+
+  const handleMouseEnter = () => {
+    if (!isPinned) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isPinned) {
+      setOpen(false);
+    }
+  };
+
+  const handleTogglePin = () => {
+    setIsPinned(!isPinned);
+    setOpen(true);
+  };
 
   return (
     <div
       className={`flex flex-col bg-white ${
         open ? "w-60" : "w-20"
       } duration-300 p-3 text-neutral-900 relative`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {open ? (
         <div className=" flex items-center gap-2 pb-3 border-b border-neutral-900">
-          <img
-            src={assets.logo_controla}
-            alt="logo"
-            width={40}
-            onMouseEnter={() => setOpen(true)} // Mở khi hover vào logo
-          />
+          <img src={assets.logo_controla} alt="logo" width={40} />
           <p className="font-bold text-orange-400 text-xl">CONTROL A</p>
           <LuArrowLeftToLine
             className="bg-white text-blue-700 ml-auto text-2xl cursor-pointer"
-            onClick={() => {
-              setOpen(!open);
-            }}
+            onClick={handleTogglePin}
           />
         </div>
       ) : (

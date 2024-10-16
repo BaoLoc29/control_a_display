@@ -4,7 +4,7 @@ import { Modal, Button, Result } from "antd";
 const SessionExpiredPopup = ({ visible, onClose }) => {
   return (
     <Modal
-      visible={visible}
+      open={visible}
       footer={null}
       onCancel={onClose}
       style={{ maxWidth: "70%", top: 130 }}

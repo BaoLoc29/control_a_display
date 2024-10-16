@@ -31,7 +31,7 @@ export default function Header() {
           <div className="text-right font-bold">{userProfile.name}</div>
           <div>{userProfile.email}</div>
         </div>
-        <Menu as="div" className="relative border-l-2 border-neutral-200 ">
+        <Menu as="div" className="border-l-2 border-neutral-200 ">
           <div>
             <Menu.Button className="ml-2 bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-400">
               <span className="sr-only">Open user menu</span>

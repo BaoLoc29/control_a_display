@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaLock } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 import { getUserProfile, editUser, changePassword } from "../services/user";
-import { Form, Input } from "antd";
+import { Breadcrumb, Form, Input } from "antd";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [activeButton, setActiveButton] = useState("info");
-  const [userEmail, setUserEmail] = useState("");
-  const [userName, setUserName] = useState("");
   const [userProfile, setUserProfile] = useState({});
   const initialValuesRef = useRef(null);
   const navigate = useNavigate();
@@ -23,14 +21,11 @@ const Profile = () => {
       try {
         const result = await getUserProfile();
         setUserProfile(result.data.user);
-
         form.setFieldsValue({
           name: result.data.user.name,
           email: result.data.user.email,
           role: result.data.user.role,
         });
-        setUserEmail(result.data.user.email);
-        setUserName(result.data.user.name);
         if (!initialValuesRef.current) {
           initialValuesRef.current = result.data.user;
         }
@@ -49,8 +44,6 @@ const Profile = () => {
       const result = await editUser(userProfile._id, values);
       if (result.data.success) {
         setUserProfile(result.data.user);
-        setUserEmail(result.data.user.email);
-        setUserName(result.data.user.name);
         toast.success("User information updated successfully.");
         window.location.reload();
       } else if (result.data.message) {
@@ -89,23 +82,24 @@ const Profile = () => {
   };
   return (
     <div>
+      <Breadcrumb
+        className="mb-5"
+        items={[
+          {
+            title: "Home",
+          },
+          {
+            title: "User",
+          },
+          {
+            title: "Profile",
+          },
+        ]}
+      />
       <div className="flex flex-row gap-3 w-full">
+        {/* Sidebar con */}
         <div className="w-[18rem] h-[22rem] rounded-sm flex flex-col pr-3 border-r border-neutral-300">
-          <div className="flex gap-3 items-center">
-            <img
-              src="https://iconape.com/wp-content/png_logo_vector/user-circle.png"
-              alt="avatar"
-              width={100}
-              className="rounded-md"
-            />
-            <div>
-              <span className="text-xl font-bold text-black">{userName}</span>
-              <br />
-              <span className="text-lg text-gray-700">{userEmail}</span>
-            </div>
-          </div>
-
-          <div className="pt-5 space-y-4">
+          <div className="space-y-4">
             <button
               className={`flex items-center gap-2 pl-3 w-full h-[2.5rem] text-white text-16 ${
                 activeButton === "info"
@@ -130,6 +124,8 @@ const Profile = () => {
             </button>
           </div>
         </div>
+
+        {/* Edit User */}
         <div
           className={`info rounded-sm flex flex-col flex-1 ${
             activeButton === "info" ? "" : "hidden"
@@ -194,6 +190,8 @@ const Profile = () => {
             </div>
           </Form>
         </div>
+
+        {/* Change password */}
         <div
           className={`password px-4 rounded-sm flex flex-col flex-1 ${
             activeButton === "password" ? "" : "hidden"
