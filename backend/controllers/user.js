@@ -32,7 +32,7 @@ export const Login = async (req, res) => {
                 error: validate.error.details[0].message
             })
         }
-        const findUser = await User.findOne({ email }).lean()
+        const findUser = await User.findOne({ email })
         if (!findUser) {
             return res.status(402).json({ success: false, error: "Email does not exist!" })
         }
