@@ -1,25 +1,33 @@
 import mongoose from "mongoose";
 
-const User = new mongoose.Schema({
+const ArticleCategory = new mongoose.Schema({
     name: {
         type: String,
         required: true
     },
-    email: {
-        type: String,
-        required: true,
-    },
-    password: {
+    slug: {
         type: String,
         required: true
     },
-    role: {
+    seo_title: {
         type: String,
         required: true
     },
+    seo_keywords: {
+        type: String,
+        required: true
+    },
+    seo_description: {
+        type: String,
+        required: true
+    },
+    thumbnail: {
+        type: String,
+        required: true
+    }
 }, { timestamps: true })
 // Định dạng lại createdAt và updatedAt khi trả về JSON
-User.methods.toJSON = function () {
+ArticleCategory.methods.toJSON = function () {
     const obj = this.toObject();
 
     obj.createdAt = this.createdAt.toLocaleString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" });
@@ -27,4 +35,4 @@ User.methods.toJSON = function () {
 
     return obj;
 }
-export default mongoose.model("users", User)
+export default mongoose.model("articleCategories", ArticleCategory)

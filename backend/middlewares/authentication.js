@@ -16,7 +16,7 @@ const authentication = async (req, res, next) => {
         }
 
         const userId = verify.id;
-
+    
         const findUser = await user.findById(userId);
 
         if (!findUser) {

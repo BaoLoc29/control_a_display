@@ -1,37 +1,17 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import classNames from "classnames";
 import { logout } from "../../feature/user/userSlice.js";
-import { getUserProfile } from "../../services/user.js";
 import { useDispatch } from "react-redux";
-
 export default function Header() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [userProfile, setUserProfile] = useState("");
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const result = await getUserProfile();
-        setUserProfile(result.data.user);
-      } catch (error) {
-        console.error("User is not found", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
   return (
-    <div className="bg-white h-16 px-2 flex items-center border-b border-gray-200 justify-end">
-      <div className="flex items-center gap-3 mr-2 ">
-        <div>
-          <div className="text-right font-bold">{userProfile.name}</div>
-          <div>{userProfile.email}</div>
-        </div>
-        <Menu as="div" className="border-l-2 border-neutral-200 ">
+    <div className="bg-white h-16 px-4 flex items-center border-b border-gray-200 justify-between">
+      <div></div>
+      <div className="flex items-center gap-2 mr-2">
+        <Menu as="div" className="relative">
           <div>
             <Menu.Button className="ml-2 bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-neutral-400">
               <span className="sr-only">Open user menu</span>
@@ -46,7 +26,6 @@ export default function Header() {
               </div>
             </Menu.Button>
           </div>
-
           <Transition
             as={Fragment}
             enter="transition ease-out duration-100"

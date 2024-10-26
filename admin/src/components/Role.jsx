@@ -1,59 +1,76 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Breadcrumb,
+  Button,
+  Form,
+  Input,
+  Popconfirm,
+  Select,
+  Space,
   Table,
   Pagination,
-  Form,
-  Button,
-  Popconfirm,
-  Space,
-  Select,
-  Input,
-  Breadcrumb,
+  Tag,
 } from "antd";
+import { TiDelete } from "react-icons/ti";
+import { PlusOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { TiDelete } from "react-icons/ti";
-import ModalCreatUser from "./Auth/ModalCreateUser/index.jsx";
 import {
-  getPagingUser,
-  createUser,
-  deleteUser,
-  editUser,
-  searchUser,
-} from "../services/user.js";
-import { PlusOutlined } from "@ant-design/icons";
-import { toast } from "react-hot-toast";
+  createRole,
+  deleteRole,
+  editRole,
+  getPagingRole,
+  searchRole,
+} from "../services/role.js";
+import toast from "react-hot-toast";
+import ModalCreateRole from "./Auth/ModalCreateRole/index.jsx";
 
-const Users = () => {
-  const [users, setUsers] = useState([]);
+const Role = () => {
+  const [form] = Form.useForm();
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalDoc, setTotalDoc] = useState(0);
-  const [modalCreateUser, setModalCreateUser] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalCreateRole, setModalCreateRole] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOption, setSelectedOption] = useState("e_code");
+  const [selectedOption, setSelectedOption] = useState("name");
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotalDoc, setSearchTotalDoc] = useState(0);
   const [searchPageIndex, setSearchPageIndex] = useState(1);
 
-  const handleOpenEditModal = (userId) => {
-    setModalCreateUser(true);
-    setSelectedUser(userId);
+  const options = [
+    { value: "name", label: "Role Name" },
+    { value: "permissions", label: "Permissions" },
+  ];
+
+  const handleOpenEditModal = (roleId) => {
+    setModalCreateRole(true);
+    setSelectedRole(roleId);
   };
 
   const handelCloseModal = () => {
     form.resetFields();
-    setModalCreateUser(false);
-    setSelectedUser(null);
+    setModalCreateRole(false);
+    setSelectedRole(null);
   };
 
-  const options = [
-    { value: "email", label: "E-mail" },
-    { value: "name", label: "Name" },
-  ];
+  const handleDeleteRole = async (roleId) => {
+    try {
+      setLoading(true);
+      await deleteRole(roleId);
+      setRoles(roles.filter((role) => role._id !== roleId));
+      toast.success("Deleted successfully!");
+      handleClearSearch();
+    } catch (error) {
+      console.log(error);
+      toast.error("Deleted faild!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -62,22 +79,27 @@ const Users = () => {
       align: "center",
     },
     {
-      title: "Name",
+      title: "Role Name",
       dataIndex: "name",
       key: "name",
       align: "center",
     },
     {
-      title: "E-mail",
-      dataIndex: "email",
-      key: "email",
-      align: "center",
-    },
-    {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
-      align: "center",
+      title: "Permissions",
+      dataIndex: "permissions",
+      key: "permissions",
+      width: 300,
+      render: (permissions) => (
+        <div className="flex flex-wrap gap-y-2">
+          {Array.isArray(permissions) ? (
+            permissions.map((permission) => (
+              <Tag key={permission}>{permission}</Tag>
+            ))
+          ) : (
+            <Tag>Loading...</Tag>
+          )}
+        </div>
+      ),
     },
     {
       title: "CreatedAt",
@@ -105,9 +127,9 @@ const Users = () => {
               onClick={() => handleOpenEditModal(row._id)}
             />
             <Popconfirm
-              title="Delete employee account"
-              description="Are you sure you want to delete this account?"
-              onConfirm={() => handleDeleteUser(row._id)}
+              title="Delete role user!"
+              description="Are you sure you want to delete this role?"
+              onConfirm={() => handleDeleteRole(row._id)}
               okText="Ok"
               cancelText="Cancel"
               style={{ cursor: "pointer" }}
@@ -120,14 +142,12 @@ const Users = () => {
     },
   ];
 
-  const [form] = Form.useForm();
-
-  // Get user
-  const getUsers = useCallback(async () => {
+  // getRole
+  const getRoles = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getPagingUser({ pageSize, pageIndex });
-      setUsers(result.data.users);
+      const result = await getPagingRole({ pageSize, pageIndex });
+      setRoles(result.data.roles);
       setTotalPages(result.data.totalPages);
       setTotalDoc(result.data.count);
     } catch (error) {
@@ -138,101 +158,37 @@ const Users = () => {
   }, [pageSize, pageIndex]);
 
   useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+    getRoles();
+  }, [getRoles]);
 
-  // Create
-  const handleCreateUser = async (value) => {
-    try {
-      setLoading(true);
-      const { confirm, ...dataToSend } = value;
-      if (!selectedUser) {
-        const result = await createUser(dataToSend);
-        if (result.data.success) {
-          setUsers([result.data.result, ...users]);
-          toast.success("Created user successfully!");
-        } else {
-          const errorMessage = result.data.error || "Created user faild!";
-          toast.error(errorMessage);
-        }
-      } else {
-        const result = await editUser(selectedUser, value);
-        if (result.data.success) {
-          setUsers(
-            users.map((user) => {
-              if (user._id === selectedUser) {
-                return result.data.user;
-              }
-              return user;
-            })
-          );
-          toast.success("Updated user successfully!");
-          setSelectedUser(null);
-        } else {
-          const errorMessage = result.data.error || "Updated user failed!";
-          toast.error(errorMessage);
-        }
-      }
-      setModalCreateUser(false);
-      handleClearSearch();
-      form.resetFields();
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        selectedUser ? "Updated user failed!" : "Created user faild!"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete
-  const handleDeleteUser = async (userId) => {
-    try {
-      setLoading(true);
-      await deleteUser(userId);
-      setUsers(users.filter((user) => user._id !== userId));
-      toast.success("Deleted user successfully!");
-      handleClearSearch();
-    } catch (error) {
-      console.log(error);
-      toast.error("Deleted user faild!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Search
   const handleSearch = async () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchUser(
+        const response = await searchRole(
           searchQuery,
           selectedOption,
           searchPageIndex,
           pageSize
         );
-        const searchResults = response.data.users;
+        const searchResults = response.data.roles;
         setSearchResults(searchResults);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error("User isn't found!");
+      toast.error("Role isn't found!");
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
-    getUsers();
+    getRoles();
   };
 
-  // Paging
   const handlePaginationChange = (pageIndex, pageSize) => {
     if (searchQuery.trim() === "") {
       setPageSize(pageSize);
@@ -245,9 +201,48 @@ const Users = () => {
     }
   };
 
+  const handleCreateRole = async (value) => {
+    try {
+      setLoading(true);
+      if (!selectedRole) {
+        const result = await createRole(value);
+        if (result.data.success) {
+          setRoles([result.data.result, ...roles]);
+          toast.success("Created successfully.!");
+        }
+      } else {
+        const result = await editRole(selectedRole, value);
+        if (result.data.success) {
+          setRoles(
+            roles.map((role) => {
+              if (role._id === selectedRole) {
+                return result.data.role;
+              }
+              return role;
+            })
+          );
+          toast.success("Updated successfully!");
+          setSelectedRole(null);
+        }
+      }
+      setModalCreateRole(false);
+      handleClearSearch();
+      form.resetFields();
+    } catch (error) {
+      if (error.response) {
+        // Lỗi từ backend
+        const errorMessage =
+          error.response.data.message || "An error occurred!";
+        toast.error(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-      <div className="flex justify-between items-center pb-4">
+      <div className="flex justify-between items-center pb-4 pt-0">
         <Breadcrumb
           className="text-sm hidden lg:block w-[30rem]"
           items={[
@@ -258,16 +253,15 @@ const Users = () => {
               title: "Auth",
             },
             {
-              title: "Users",
+              title: "Roles",
             },
           ]}
         />
         <div className="flex flex-col lg:flex-row w-full gap-2 lg:justify-between">
           <Space.Compact className="w-full lg:w-[32rem] relative">
             <Select
-              defaultValue="Email"
+              defaultValue="Role Name"
               options={options}
-              className="w-[10rem]"
               onChange={(value) => setSelectedOption(value)}
             />
             <Input
@@ -286,9 +280,9 @@ const Users = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setModalCreateUser(true)}
+            onClick={() => setModalCreateRole(true)}
           >
-            Create user
+            Create role
           </Button>
         </div>
       </div>
@@ -296,7 +290,7 @@ const Users = () => {
         className="shadow-md mt-2"
         loading={loading}
         columns={columns}
-        dataSource={searchResults.length > 0 ? searchResults : users}
+        dataSource={searchResults.length > 0 ? searchResults : roles}
         pagination={false}
         scroll={{ x: 1000 }}
       />
@@ -309,17 +303,17 @@ const Users = () => {
         showSizeChanger
         onChange={handlePaginationChange}
       />
-      <ModalCreatUser
+      <ModalCreateRole
         form={form}
         loading={loading}
-        title={selectedUser ? "Update user" : "Create user"}
-        isModalOpen={modalCreateUser}
+        title={selectedRole ? "Update Role" : "Create Role"}
+        isModalOpen={modalCreateRole}
         handleCancel={handelCloseModal}
-        handleOk={handleCreateUser}
-        selectedUser={selectedUser}
+        handleOk={handleCreateRole}
+        selectedRole={selectedRole}
       />
     </div>
   );
 };
 
-export default Users;
+export default Role;

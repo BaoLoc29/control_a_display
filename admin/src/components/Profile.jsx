@@ -96,12 +96,12 @@ const Profile = () => {
           },
         ]}
       />
-      <div className="flex flex-row gap-3 w-full">
+      <div className="flex flex-col md:flex-row gap-3 w-full">
         {/* Sidebar con */}
-        <div className="w-[18rem] h-[22rem] rounded-sm flex flex-col pr-3 border-r border-neutral-300">
+        <div className="w-full md:w-1/4 lg:w-1/5 h-auto md:h-[22rem] rounded-sm flex flex-col">
           <div className="space-y-4">
             <button
-              className={`flex items-center gap-2 pl-3 w-full h-[2.5rem] text-white text-16 ${
+              className={`flex items-center gap-2 pl-3 w-full h-[2.5rem] text-white text-base md:text-lg ${
                 activeButton === "info"
                   ? "bg-blue-500 hover:bg-blue-600"
                   : "bg-gray-500 hover:bg-gray-600"
@@ -112,7 +112,7 @@ const Profile = () => {
               Sửa thông tin nhân viên
             </button>
             <button
-              className={`flex items-center gap-2 pl-3 w-full h-[2.5rem] text-white text-16 ${
+              className={`flex items-center gap-2 pl-3 w-full h-[2.5rem] text-white text-base md:text-lg ${
                 activeButton === "password"
                   ? "bg-blue-500 hover:bg-blue-600"
                   : "bg-gray-500 hover:bg-gray-600"
@@ -124,6 +124,9 @@ const Profile = () => {
             </button>
           </div>
         </div>
+
+        {/* Thanh phân tách dọc */}
+        <div className="hidden md:block w-[1px] bg-gray-300"></div>
 
         {/* Edit User */}
         <div
@@ -183,7 +186,7 @@ const Profile = () => {
               <button
                 loading={loading}
                 htmlType="submit"
-                className="w-[15rem] h-[2.75rem] mr-2 bg-green-500 hover:bg-green-600 text-white text-base font-bold rounded-sm"
+                className="w-full md:w-[15rem] h-[2.75rem] bg-green-500 hover:bg-green-600 text-white text-base font-bold rounded-sm"
               >
                 Lưu thay đổi
               </button>
@@ -193,7 +196,7 @@ const Profile = () => {
 
         {/* Change password */}
         <div
-          className={`password px-4 rounded-sm flex flex-col flex-1 ${
+          className={`password rounded-sm flex flex-col flex-1 ${
             activeButton === "password" ? "" : "hidden"
           }`}
         >
@@ -283,7 +286,7 @@ const Profile = () => {
               <button
                 loading={loading}
                 htmlType="submit"
-                className="w-[15rem] h-[2.75rem] mr-2 bg-green-500 hover:bg-green-600 text-white text-base font-bold rounded-sm"
+                className="w-full md:w-[15rem] h-[2.75rem] bg-green-500 hover:bg-green-600 text-white text-base font-bold rounded-sm"
               >
                 Lưu thay đổi
               </button>

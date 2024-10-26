@@ -8,6 +8,7 @@ const SessionExpiredPopup = ({ visible, onClose }) => {
       footer={null}
       onCancel={onClose}
       style={{ maxWidth: "70%", top: 130 }}
+      maskClosable={false}
     >
       <Result
         className="p-2"

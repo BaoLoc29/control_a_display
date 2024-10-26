@@ -10,7 +10,7 @@ const createUser = (data) => {
     return axiosInstanceAuth.post('/user/create-user', data);
 }
 const editUser = (userId, data) => {
-    return axiosInstanceAuth.patch(`/user/edit-user/${userId}`, data)
+    return axiosInstanceAuth.put(`/user/edit-user/${userId}`, data)
 }
 const deleteUser = (userId) => {
     return axiosInstanceAuth.delete(`/user/${userId}`)

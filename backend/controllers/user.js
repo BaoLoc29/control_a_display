@@ -1,11 +1,10 @@
 import User from "../models/user.js"
+import Role from "../models/role.js"
 import bcrypt from "bcryptjs"
 import joi from "joi"
 import jwt from "jsonwebtoken"
+import moment from 'moment';
 
-const formatCreatedAt = (date) => {
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
 export const Login = async (req, res) => {
     const { compareSync } = bcrypt
     try {
@@ -70,7 +69,7 @@ export const createUser = async (req, res) => {
     const { hashSync, genSaltSync } = bcrypt;
     try {
         const data = req.body
-        const { email, password } = data
+        const { email, password, role } = data
 
         const createSchema = joi.object({
             name: joi.string().required().messages({
@@ -84,7 +83,7 @@ export const createUser = async (req, res) => {
                 'string.min': 'Password must have at least 6 characters!',
                 'string.empty': 'Password is required!',
             }),
-            role: joi.string().required().valid("editor", "super-admin").messages({
+            role: joi.string().required().messages({
                 'string.empty': 'Role is required!',
             })
 
@@ -106,6 +105,13 @@ export const createUser = async (req, res) => {
         const salt = genSaltSync();
         const hashedPassword = hashSync(password, salt);
 
+
+        // Check role
+        const findRole = await Role.findOne({ name: role })
+        if (!findRole) {
+            return res.status(401).json({ success: false, message: `Role ${role} does not exist!` });
+        }
+
         const result = await User.create({ ...data, password: hashedPassword })
 
         return res.status(200).json({
@@ -114,7 +120,6 @@ export const createUser = async (req, res) => {
             user: {
                 _id: result._id,
                 email: result.email,
-                createdAt: formatCreatedAt(result.createdAt)
             }
         })
 
@@ -201,7 +206,7 @@ export const changePassword = async (req, res) => {
 };
 export const editUser = async (req, res) => {
     try {
-        const { name, email } = req.body;
+        const { name, email, role } = req.body;
         const { id } = req.params;
 
         const editSchema = joi.object({
@@ -212,9 +217,12 @@ export const editUser = async (req, res) => {
                 'string.email': 'Invalid email!',
                 'string.empty': 'Email is required!'
             }),
+            role: joi.string().required().messages({
+                'string.empty': 'Role user is required!'
+            })
         });
 
-        const { error } = editSchema.validate({ name, email });
+        const { error } = editSchema.validate({ name, email, role });
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -227,21 +235,23 @@ export const editUser = async (req, res) => {
             return res.status(400).json({ success: false, message: "Email is already in use. Please try using a different email!" });
         }
 
+        // Check role
+        const findRole = await Role.findOne({ name: role })
+        if (!findRole) {
+            return res.status(401).json({ success: false, message: `Role ${role} does not exist!` });
+        }
+
         const updateUser = await User.findByIdAndUpdate(id, {
-            name, email
+            name, email, role
         }, { new: true }).select("-password");
 
         if (!updateUser) {
             return res.status(400).json({ success: false, message: "User does not exist!" });
         }
-
         return res.status(200).json({
             success: true,
             message: "User information updated successfully.",
-            user: {
-                ...updateUser.toObject(),
-                createdAt: formatCreatedAt(updateUser.createdAt)
-            }
+            user: { updateUser }
         });
     } catch (error) {
         console.error(error);
@@ -249,7 +259,7 @@ export const editUser = async (req, res) => {
             const errorMessage = error.details.map((detail) => detail.message).join(', ');
             return res.status(400).json({ success: false, message: errorMessage });
         } else {
-            return res.status(500).json({ success: false, message: "Failed to update user information!" });
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 };
@@ -275,12 +285,7 @@ export const getPagingUser = async (req, res) => {
         const countUsers = await User.countDocuments()
         const totalPage = Math.ceil(countUsers / query.pageSize)
 
-        const formattedUsers = users.map(user => ({
-            ...user.toObject(),
-            createdAt: formatCreatedAt(user.createdAt)
-        }));
-
-        return res.status(200).json({ users: formattedUsers, totalPage, count: countUsers })
+        return res.status(200).json({ users, totalPage, count: countUsers })
     } catch (error) {
         return res.status(500).json(error)
     }
@@ -294,16 +299,19 @@ export const searchUser = async (req, res) => {
             return res.status(200).json({ noKeyword });
         }
 
-        const users = await User.find();
+
+        let searchField = {};
+        if (option === "name") {
+            searchField = { name: { $regex: keyword, $options: 'i' } };
+        } else if (option === "email") {
+            searchField = { email: { $regex: keyword, $options: 'i' } };
+        }
+
+        const users = await User.find({ ...searchField });
         if (!users || users.length === 0) {
             return res.status(404).json({ message: "Người dùng không tồn tại!" });
         }
-
-        const formattedUsers = users.map(user => ({
-            ...user.toObject(),
-            createdAt: formatCreatedAt(user.createdAt)
-        }));
-        return res.status(200).json({ users: formattedUsers });
+        return res.status(200).json({ users });
 
     } catch (error) {
         return res.status(500).json({ error: error.message });

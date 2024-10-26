@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { Form, Input, Modal, Select, Button, Spin } from "antd";
-import { getUserById } from "../../services/user.js";
+import { getUserById } from "../../../services/user.js";
+import { getAllRole } from "../../../services/role.js";
 
 const ModalCreateUser = ({
   form,
@@ -12,6 +13,16 @@ const ModalCreateUser = ({
   selectedUser,
 }) => {
   const [loadingData, setLoadingData] = useState(false);
+  const [roleList, setRoleList] = useState([]);
+
+  const getRole = useCallback(async () => {
+    try {
+      const result = await getAllRole();
+      setRoleList(result.data.roles);
+    } catch (error) {
+      console.error("Failed to fetch roles:", error);
+    }
+  }, []);
 
   const getUser = useCallback(async () => {
     try {
@@ -30,11 +41,20 @@ const ModalCreateUser = ({
   }, [selectedUser, form]);
 
   useEffect(() => {
-    if (selectedUser) getUser();
-  }, [selectedUser, getUser]);
+    if (selectedUser) {
+      getUser();
+    } else {
+      getRole();
+    }
+  }, [selectedUser, getUser, getRole]);
 
   return (
-    <Modal open={isModalOpen} footer={null} onCancel={handleCancel}>
+    <Modal
+      open={isModalOpen}
+      footer={null}
+      onCancel={handleCancel}
+      maskClosable={false}
+    >
       <div className="text-center text-xl font-bold mb-2">
         <h2>{title}</h2>
       </div>
@@ -85,8 +105,11 @@ const ModalCreateUser = ({
             ]}
           >
             <Select placeholder="--Select role--" size="large">
-              <Select.Option value="super-admin">super-admin</Select.Option>
-              <Select.Option value="editor">editor</Select.Option>
+              {roleList.map((roles) => (
+                <Select.Option key={roles._id} value={roles.name}>
+                  {roles.name}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
 
