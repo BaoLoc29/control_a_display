@@ -5,22 +5,24 @@ import {
   Input,
   Popconfirm,
   Table,
-  Image,
   Pagination,
+  Form,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import {
-  deleteArticleCategory,
-  getArticleCategory,
-  searchArticleCategory,
-} from "../services/articleCategory.js";
-import { useNavigate } from "react-router-dom";
+  createMenu,
+  deleteMenu,
+  editMenu,
+  getPagingMenu,
+  searchMenu,
+} from "../services/menu.js";
 import toast from "react-hot-toast";
+import ModalCreateMenu from "./Blog/ModalCreateMenu/index.jsx";
 
-const ArticleCategory = () => {
-  const [articleCategories, setArticleCategories] = useState([]);
+const Menus = () => {
+  const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(1);
@@ -30,10 +32,19 @@ const ArticleCategory = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotalDoc, setSearchTotalDoc] = useState(0);
   const [searchPageIndex, setSearchPageIndex] = useState(1);
-  const navigate = useNavigate();
+  const [modalCreateMenu, setModalCreateMenu] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [form] = Form.useForm();
 
-  const handleOpenEdit = (id) => {
-    navigate(`/article-category/edit/${id}`);
+  const handleOpenEditModal = (menuId) => {
+    setModalCreateMenu(true);
+    setSelectedMenu(menuId);
+  };
+
+  const handelCloseModal = () => {
+    form.resetFields();
+    setModalCreateMenu(false);
+    setSelectedMenu(null);
   };
 
   const columns = [
@@ -43,16 +54,9 @@ const ArticleCategory = () => {
       align: "center",
     },
     {
-      title: "Thumbnail",
-      dataIndex: "thumbnail",
-      key: "thumbnail",
-      align: "center",
-      render: (thumbnail) => <Image src={thumbnail} style={{ width: 50 }} />,
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
       align: "center",
       render: (text) => text || "Loading...",
     },
@@ -64,10 +68,17 @@ const ArticleCategory = () => {
       render: (text) => text || "Loading...",
     },
     {
-      title: "SEO_Description",
-      dataIndex: "seo_description",
-      key: "seo_description",
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
       width: 200,
+      align: "center",
+      render: (text) => text || "Loading...",
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
       align: "center",
       render: (text) => text || "Loading...",
     },
@@ -97,12 +108,12 @@ const ArticleCategory = () => {
         return (
           <div className="flex gap-2 justify-center">
             <FaEdit
-              onClick={() => handleOpenEdit(row._id)}
+              onClick={() => handleOpenEditModal(row._id)}
               className="text-blue-500 text-2xl hover:text-blue-700 cursor-pointer"
             />
             <Popconfirm
-              title="Delete article category"
-              description="Are you sure you want to delete article category?"
+              title="Delete menu"
+              description="Are you sure you want to delete this menu?"
               okText="Ok"
               cancelText="Cancel"
               style={{ cursor: "pointer" }}
@@ -116,30 +127,29 @@ const ArticleCategory = () => {
     },
   ];
 
-  // getRole
-  const getArticleCategories = useCallback(async () => {
+  const getMenus = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getArticleCategory({ pageSize, pageIndex });
-      setArticleCategories(result.data.articleCategories);
+      const result = await getPagingMenu({ pageSize, pageIndex });
+      setMenus(result.data.menus);
       setTotalPages(result.data.totalPages);
       setTotalDoc(result.data.count);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to retrieve menu data.", error);
     } finally {
       setLoading(false);
     }
   }, [pageSize, pageIndex]);
 
   useEffect(() => {
-    getArticleCategories();
-  }, [getArticleCategories]);
+    getMenus();
+  }, [getMenus]);
 
   const handlePaginationChange = (pageIndex, pageSize) => {
     if (searchQuery.trim() === "") {
       setPageSize(pageSize);
       setPageIndex(pageIndex);
-      getArticleCategories();
+      getMenus();
     } else {
       setSearchPageIndex(pageIndex);
       handleSearch(pageSize);
@@ -150,11 +160,44 @@ const ArticleCategory = () => {
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      const result = await deleteArticleCategory(id);
-      setArticleCategories(articleCategories.filter((item) => item._id !== id));
+      const result = await deleteMenu(id);
+      setMenus(menus.filter((item) => item._id !== id));
       toast.success(result.data.message);
     } catch (error) {
       toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateMenu = async (value) => {
+    try {
+      setLoading(true);
+      const { confirm, ...dataToSend } = value;
+      if (!selectedMenu) {
+        const result = await createMenu(dataToSend);
+        setMenus([result.data.result, ...menus]);
+        toast.success(result.data.message);
+      } else {
+        const result = await editMenu(selectedMenu, value);
+        setMenus(
+          menus.map((menu) => {
+            if (menu._id === selectedMenu) {
+              return result.data.menu;
+            }
+            return menu;
+          })
+        );
+        toast.success(result.data.message);
+        setSelectedMenu(null);
+      }
+      setModalCreateMenu(false);
+      handleClearSearch();
+      form.resetFields();
+    } catch (error) {
+      toast.error(
+        selectedMenu ? error.response.data.message : error.response.data.message
+      );
     } finally {
       setLoading(false);
     }
@@ -164,26 +207,24 @@ const ArticleCategory = () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchArticleCategory(searchQuery);
-        setSearchResults(response.data.articleCategories);
+        const response = await searchMenu(searchQuery);
+        setSearchResults(response.data.menus);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error("Menu not found!");
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
     setSearchPageIndex(1);
-    getArticleCategories();
+    getMenus();
   };
-
   return (
     <div>
       <div className="flex justify-between items-center pb-4 pt-0">
@@ -197,7 +238,7 @@ const ArticleCategory = () => {
               title: "Blogs",
             },
             {
-              title: "Article Category",
+              title: "Menu",
             },
           ]}
         />
@@ -219,11 +260,9 @@ const ArticleCategory = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => {
-              navigate("/article-category/create");
-            }}
+            onClick={() => setModalCreateMenu(true)}
           >
-            Create Category
+            Create menu
           </Button>
         </div>
       </div>
@@ -231,9 +270,7 @@ const ArticleCategory = () => {
         className="shadow-md mt-2"
         loading={loading}
         columns={columns}
-        dataSource={
-          searchResults.length > 0 ? searchResults : articleCategories
-        }
+        dataSource={searchResults.length > 0 ? searchResults : menus}
         pagination={false}
         scroll={{ x: 1000 }}
       />
@@ -246,8 +283,17 @@ const ArticleCategory = () => {
         showSizeChanger
         onChange={handlePaginationChange}
       />
+      <ModalCreateMenu
+        form={form}
+        loading={loading}
+        title={selectedMenu ? "Update menu" : "Create menu"}
+        isModalOpen={modalCreateMenu}
+        handleCancel={handelCloseModal}
+        handleOk={handleCreateMenu}
+        selectedMenu={selectedMenu}
+      />
     </div>
   );
 };
 
-export default ArticleCategory;
+export default Menus;

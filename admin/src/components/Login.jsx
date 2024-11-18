@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Input, Form } from "antd";
 import { FiLogIn } from "react-icons/fi";
 import { useDispatch } from "react-redux";
@@ -11,36 +11,45 @@ import {
   saveTokenToLocalStorage,
   saveUserToLocalStorage,
 } from "../utils/localstorage";
+import ModalRetryActive from "./Auth/ModalRetryActive";
+import ModalForgotPassword from "./Auth/ModalForgotPassword";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalPassword, setModalPassword] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const onFinish = async (values) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const result = await login(values);
-      if (result.data.success) {
-        dispatch(loginAction({ user: result.data.user }));
-        saveTokenToLocalStorage(result.data.accessToken);
-        saveUserToLocalStorage(result.data.user);
-        toast.success("Login successful!");
-        navigate("/");
+      const { isActive, accessToken, user, email, message } = result.data;
+
+      if (isActive === false) {
+        console.log(result.data.isActive);
+        setUserEmail(email);
+        setIsModalOpen(true);
       } else {
-        const errorMessage = result.data.error || "Login failed";
-        toast.error(errorMessage);
+        dispatch(loginAction({ user }));
+        saveTokenToLocalStorage(accessToken);
+        saveUserToLocalStorage(user);
+        toast.success(message);
+        navigate("/");
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.error || "Login failed!";
-      toast.error(errorMessage);
+      toast.error(error.response?.data?.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Login failed:", errorInfo);
+  const handleForgotPass = async () => {
+    setModalPassword(true);
   };
+
   // sm (Small): Kích thước màn hình nhỏ, thường là điện thoại di động. (>= 640px)
   // md (Medium): Kích thước màn hình trung bình, như máy tính bảng. (>= 768px)
   // lg (Large): Kích thước màn hình lớn, như laptop nhỏ hoặc máy tính bảng cỡ lớn. (>= 1024px)
@@ -48,7 +57,7 @@ const Login = () => {
     <div
       // Khi màn hình laptop thì center
       // Khi màn hình điện thoại thì start
-      className="flex min-h-screen justify-center items-start lg:px-8 sm:items-center px-4 py-8 sm:px-6"
+      className="flex min-h-screen justify-center items-center lg:px-8 px-4 py-8 sm:px-6"
       style={{
         backgroundImage:
           "url('https://st3.depositphotos.com/7138812/36699/v/600/depositphotos_366993736-stock-video-abstract-white-modern-shape-line.jpg')",
@@ -72,7 +81,6 @@ const Login = () => {
               layout="vertical"
               initialValues={{}}
               onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
             >
               <Form.Item
                 label={<span className="font-bold">E-mail</span>}
@@ -134,12 +142,12 @@ const Login = () => {
                     </label>
                   </div>
                 </div>
-                <Link
-                  to="#"
-                  className="text-sm font-medium text-black hover:underline dark:text-primary-500"
+                <div
+                  onClick={handleForgotPass}
+                  className="cursor-pointer hover:text-blue-500 text-sm font-medium hover:underline"
                 >
                   Forgot password?
-                </Link>
+                </div>
               </div>
 
               <Button
@@ -155,6 +163,19 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <ModalRetryActive
+        loading={loading}
+        title={"Retry active email"}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        userEmail={userEmail}
+      />
+      <ModalForgotPassword
+        loading={loading}
+        title={"Forgot password"}
+        isModalPassword={isModalPassword}
+        setModalPassword={setModalPassword}
+      />
     </div>
   );
 };

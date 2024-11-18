@@ -10,11 +10,12 @@ import AuthLayout from "./layouts/AuthLayout/index.jsx";
 import isObjctEmpty from "./utils/isObjectEmpty";
 import Profile from "./components/Profile.jsx";
 import Users from "./components/Users";
-import Role from "./components/Role.jsx";
+import Roles from "./components/Roles.jsx";
 import ArticleCategory from "./components/ArticleCategory.jsx";
 import SessionExpiredPopup from "./components/Auth/SessionExpiredPopup/index.jsx";
 import EditArticleCategory from "./components/Blog/EditArticleCategory/index.jsx";
 import CreateArticleCategory from "./components/Blog/CreateArticleCategory/index.jsx";
+import Menus from "./components/Menus.jsx";
 
 const App = () => {
   const user = useSelector((state) => state.users.user);
@@ -54,7 +55,8 @@ const App = () => {
               <Route index element={<Dashboard />} />
               <Route path="users" element={<Users />} />
               <Route path="my-profile" element={<Profile />} />
-              <Route path="roles" element={<Role />} />
+              <Route path="roles" element={<Roles />} />
+              <Route path="menus" element={<Menus />} />
               <Route path="article-category" element={<ArticleCategory />} />
               <Route
                 path="article-category/edit/:articleCategoryId"
@@ -62,7 +64,7 @@ const App = () => {
               />
               <Route
                 path="article-category/create"
-                element={<CreateArticleCategory/>}
+                element={<CreateArticleCategory />}
               />
             </Route>
           </Route>

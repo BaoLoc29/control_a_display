@@ -34,7 +34,7 @@ const Users = () => {
   const [modalCreateUser, setModalCreateUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOption, setSelectedOption] = useState("e_code");
+  const [selectedOption, setSelectedOption] = useState("email");
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotalDoc, setSearchTotalDoc] = useState(0);
   const [searchPageIndex, setSearchPageIndex] = useState(1);
@@ -66,18 +66,30 @@ const Users = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
+      render: (text) => text || "Loading...",
     },
     {
       title: "E-mail",
       dataIndex: "email",
       key: "email",
       align: "center",
+      render: (text) => text || "Loading...",
     },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
       align: "center",
+      render: (text) => text || "Loading...",
+    },
+    {
+      title: "Active",
+      dataIndex: "isActive",
+      key: "isActive",
+      align: "center",
+      render: (row) => {
+        return row ? "True" : "False";
+      },
     },
     {
       title: "CreatedAt",
@@ -85,6 +97,7 @@ const Users = () => {
       key: "createdAt",
       align: "center",
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      render: (text) => text || "Loading...",
     },
     {
       title: "UpdatedAt",
@@ -92,6 +105,7 @@ const Users = () => {
       key: "updatedAt",
       align: "center",
       sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
+      render: (text) => text || "Loading...",
     },
     {
       title: "Action",
@@ -141,45 +155,34 @@ const Users = () => {
     getUsers();
   }, [getUsers]);
 
-  // Create
+  // Create - edit
   const handleCreateUser = async (value) => {
     try {
       setLoading(true);
       const { confirm, ...dataToSend } = value;
       if (!selectedUser) {
         const result = await createUser(dataToSend);
-        if (result.data.success) {
-          setUsers([result.data.result, ...users]);
-          toast.success("Created user successfully!");
-        } else {
-          const errorMessage = result.data.error || "Created user faild!";
-          toast.error(errorMessage);
-        }
+        setUsers([result.data.result, ...users]);
+        toast.success(result.data.message);
       } else {
         const result = await editUser(selectedUser, value);
-        if (result.data.success) {
-          setUsers(
-            users.map((user) => {
-              if (user._id === selectedUser) {
-                return result.data.user;
-              }
-              return user;
-            })
-          );
-          toast.success("Updated user successfully!");
-          setSelectedUser(null);
-        } else {
-          const errorMessage = result.data.error || "Updated user failed!";
-          toast.error(errorMessage);
-        }
+        setUsers(
+          users.map((user) => {
+            if (user._id === selectedUser) {
+              return result.data.user;
+            }
+            return user;
+          })
+        );
+        toast.success(result.data.message);
+        setSelectedUser(null);
       }
       setModalCreateUser(false);
       handleClearSearch();
       form.resetFields();
     } catch (error) {
-      console.log(error);
       toast.error(
-        selectedUser ? "Updated user failed!" : "Created user faild!"
+        selectedUser ? error.response?.data?.error : error.response?.data?.error
       );
     } finally {
       setLoading(false);
@@ -190,13 +193,12 @@ const Users = () => {
   const handleDeleteUser = async (userId) => {
     try {
       setLoading(true);
-      await deleteUser(userId);
+      const result = await deleteUser(userId);
       setUsers(users.filter((user) => user._id !== userId));
-      toast.success("Deleted user successfully!");
+      toast.success(result.data.message);
       handleClearSearch();
     } catch (error) {
-      console.log(error);
-      toast.error("Deleted user faild!");
+      toast.error(error.response?.data?.error);
     } finally {
       setLoading(false);
     }
@@ -213,13 +215,12 @@ const Users = () => {
           searchPageIndex,
           pageSize
         );
-        const searchResults = response.data.users;
-        setSearchResults(searchResults);
+        setSearchResults(response.data.users);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error("User isn't found!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

@@ -1,37 +1,25 @@
 import mongoose from "mongoose";
 
-const User = new mongoose.Schema({
-    name: {
+const Menu = new mongoose.Schema({
+    title: {
         type: String,
         required: true
     },
-    email: {
+    slug: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    type: {
         type: String,
         required: true,
-        unique: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    role: {
-        type: String,
-        required: true
-    },
-    codeId: {
-        type: String,
-    },
-    isActive: {
-        type: Boolean,
-        default: false,
-    },
-    codeExpired: {
-        type: Date,
-        default: Date.now,
+        enum: ["Option", "Link"]
     }
 }, { timestamps: true })
-// Định dạng lại createdAt và updatedAt khi trả về JSON
-User.methods.toJSON = function () {
+Menu.methods.toJSON = function () {
     const obj = this.toObject();
 
     obj.createdAt = this.createdAt.toLocaleString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" });
@@ -39,4 +27,4 @@ User.methods.toJSON = function () {
 
     return obj;
 }
-export default mongoose.model("users", User)
+export default mongoose.model("menus", Menu)

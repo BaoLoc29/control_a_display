@@ -40,10 +40,9 @@ const ModalCreateRole = ({
   }, []);
 
   useEffect(() => {
-    if (!selectedRole) {
-      getPermissions(); // Gọi hàm để lấy permissions khi không có selectedRole
-    } else {
-      getRole(); // Gọi hàm để lấy role nếu có selectedRole
+    if (selectedRole) {
+      getPermissions();
+      getRole();
     }
   }, [selectedRole, getRole, getPermissions]);
 

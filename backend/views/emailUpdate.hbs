@@ -1,0 +1,56 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm Email Change</title>
+    <style>
+      .body-email { margin: 0; padding: 0; min-width: 100%; font-family: Arial,
+      sans-serif; font-size: 18px; line-height: 1.5; background-color: #fafafa;
+      color: #222222; } .email-container { max-width: 600px; width: 100%;
+      background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px
+      rgba(0, 0, 0, 0.1); margin: 20px auto; } .email-header { background-color:
+      #007bff; padding: 20px; text-align: center; color: #ffffff;
+      border-top-left-radius: 8px; border-top-right-radius: 8px; } .email-header
+      h1 { margin: 0; font-size: 24px; } .email-body { padding: 10px 30px;
+      text-align: left; } .email-body h2 { font-size: 20px; margin-bottom: 10px;
+      } .email-body p { line-height: 1.5; margin-bottom: 20px; } .confirm-button
+      { display: block; margin: 0 auto; padding: 10px 20px; color: #ffffff
+      !important; background-color: #007bff; text-decoration: none;
+      border-radius: 4px; font-weight: bold; cursor: pointer; text-align:
+      center; width: 50%; } .email-footer { padding: 20px; font-size: 12px;
+      text-align: center; color: #777; border-top: 1px solid #ddd; }
+    </style>
+  </head>
+  <body class="body-email">
+    <div class="email-container">
+      <div class="email-header">
+        <h1>Email Change Notification</h1>
+      </div>
+      <div class="email-body">
+        <h2>Hello {{name}},</h2>
+        <p>
+          We have received a request to change the email address associated with
+          your account. Please confirm the following information:
+        </p>
+
+        <p><strong>Old Email:</strong> {{oldEmail}}</p>
+        <p><strong>New Email:</strong> {{newEmail}}</p>
+
+        <p>To confirm the email change, please copy this code to the admin page
+          to authenticate your account!</p>
+        <h2
+          style="font-size: 20px; color: #007bff; font-weight: 700; line-height: 1.25; margin-top: 0; margin-bottom: 15px; text-align: center;"
+        >
+          {{activationCode}}</h2>
+
+        <p>
+          If you did not request this change, please ignore this email. Your
+          account will remain secure.
+        </p>
+      </div>
+      <div class="email-footer">
+        <p>Best regards,<br />Hong Bao Technology Co., Ltd.</p>
+      </div>
+    </div>
+  </body>
+</html>

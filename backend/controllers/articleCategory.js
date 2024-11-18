@@ -12,8 +12,8 @@ export const createArticleCategory = async (req, res) => {
         // Upload the image to Cloudinary
         const result = await handleUpload(dataURI);
 
-        const { name, seo_title, seo_keywords, seo_description, slug: userSlug } = req.body;
-        const slug = userSlug ? toSlug(userSlug) : toSlug(name);
+        const { name, seo_title, seo_keywords, seo_description, slug: useSlug } = req.body;
+        const slug = useSlug ? toSlug(useSlug) : toSlug(name);
         const thumbnail = result.url;
 
         // Validate input data
@@ -40,16 +40,14 @@ export const createArticleCategory = async (req, res) => {
         // Check if the file exists
         if (!req.file) {
             return res.status(400).json({
-                success: false,
-                error: "Thumbnail image is required!",
+                message: "Thumbnail image is required!",
             });
         }
 
         const { error } = createSchema.validate({ name, slug, seo_title, seo_keywords, seo_description });
         if (error) {
             return res.status(400).json({
-                success: false,
-                error: error.details.map((e) => e.message),
+                message: error.details.map((e) => e.message),
             });
         }
 
@@ -57,8 +55,7 @@ export const createArticleCategory = async (req, res) => {
         const findSlug = await ArticleCategory.findOne({ slug });
         if (findSlug) {
             return res.status(400).json({
-                success: false,
-                error: "Slug already exists!",
+                message: "Slug already exists!",
             });
         }
 
@@ -66,20 +63,48 @@ export const createArticleCategory = async (req, res) => {
         const articleCategory = await ArticleCategory.create({ name, slug, seo_title, seo_keywords, seo_description, thumbnail });
 
         return res.status(201).json({
-            success: true,
+            message: "Created successfully!",
             data: articleCategory,
         });
 
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 export const editArticleCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, seo_title, seo_keywords, seo_description, slug: userSlug } = req.body;
-        const slug = userSlug ? toSlug(userSlug) : toSlug(name); 
-        
+        const { name, seo_title, seo_keywords, seo_description, slug: useSlug } = req.body;
+        const slug = useSlug ? toSlug(useSlug) : toSlug(name);
+
+        // Validate input data
+        const editSchema = joi.object({
+            name: joi.string().required().messages({
+                'string.empty': 'Name article category is required!',
+            }),
+            slug: joi.string().required().messages({
+                'string.empty': 'Slug article category is required!',
+            }),
+            seo_title: joi.string().required().messages({
+                'string.base': 'SEO Title must be a string!',
+            }),
+            seo_keywords: joi.string().required().messages({
+                'string.base': 'SEO Keywords must be a string!',
+            }),
+            seo_description: joi.string().required().min(50).max(160).messages({
+                'string.empty': 'SEO Description article category is required!',
+                'string.min': 'SEO Description must be at least 50 characters long!',
+                'string.max': 'SEO Description must be at most 160 characters long!'
+            }),
+        });
+
+        const { error } = editSchema.validate({ name, slug, seo_title, seo_keywords, seo_description });
+        if (error) {
+            return res.status(400).json({
+                message: error.details.map((e) => e.message),
+            });
+        }
+
         // Nếu có tệp (ảnh) thì upload lên Cloudinary
         let thumbnail;
         if (req.file) {
@@ -92,8 +117,7 @@ export const editArticleCategory = async (req, res) => {
         const existingCategory = await ArticleCategory.findOne({ slug, _id: { $ne: id } });
         if (existingCategory) {
             return res.status(400).json({
-                success: false,
-                error: "Slug already exists!",
+                message: "Slug already exists!",
             });
         }
 
@@ -110,18 +134,17 @@ export const editArticleCategory = async (req, res) => {
 
         if (!updatedCategory) {
             return res.status(404).json({
-                success: false,
-                error: "Article category not found!",
+                message: "Article category not found!",
             });
         }
 
         return res.status(200).json({
-            success: true,
+            message: "Updated successfully!",
             data: updatedCategory,
         });
 
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 export const getPagingArticleCategory = async (req, res) => {
@@ -144,10 +167,10 @@ export const deleteArticleCategory = async (req, res) => {
         const { id } = req.params
         const articleCategory = await ArticleCategory.findByIdAndDelete(id)
         if (!articleCategory) {
-            return res.status(404).json({ success: false, error: "Article category not found!" })
+            return res.status(404).json({ message: "Article category not found!" })
         }
         return res.status(200).json({
-            success: true, message: "Delete article category successfully"
+            message: "Deleted successfully!"
         })
     } catch (error) {
         return res.status(500).json({ message: error.message })
@@ -158,11 +181,11 @@ export const getArticleCategoryById = async (req, res) => {
         const { id } = req.params
         const articleCategory = await ArticleCategory.findById(id)
         if (!articleCategory) {
-            return res.status(404).json({ success: false, message: "articleCategory does not exist!" });
+            return res.status(404).json({ message: "ArticleCategory does not exist!" });
         }
-        return res.status(200).json({ success: true, articleCategory });
+        return res.status(200).json({ articleCategory });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 export const searchArticleCategory = async (req, res) => {
@@ -170,11 +193,11 @@ export const searchArticleCategory = async (req, res) => {
         const query = req.query
         const articleCategories = await ArticleCategory.find({ name: { $regex: query.name, $options: 'i' } }).sort({ createdAt: "desc" })
         if (articleCategories.length === 0) {
-            return res.status(404).json({ success: false, message: "Article category not found!" })
+            return res.status(404).json({ message: "Article category not found!" })
         }
-        return res.status(200).json({ success: true, articleCategories })
+        return res.status(200).json({ articleCategories })
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
+        return res.status(500).json({ message: error.message })
     }
 }
 

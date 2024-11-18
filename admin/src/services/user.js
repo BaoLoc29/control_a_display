@@ -27,6 +27,21 @@ const getUserProfile = () => {
 const changePassword = (userId, oldPassword, newPassword) => {
     return axiosInstanceAuth.put(`/user/change-password/${userId}`, oldPassword, newPassword)
 }
+const retryActive = (email) => {
+    return axiosInstance.post('/user/retry-active', email)
+}
+const checkCode = (data) => {
+    return axiosInstance.post("/user/check-code", data)
+}
+const retryPassword = (data) => {
+    return axiosInstance.post('/user/retry-password', data)
+}
+const forgotPassword = (data) => {
+    return axiosInstance.post('/user/forgot-password', data)
+}
+const changeEmail = (data) => {
+    return axiosInstance.post('/user/change-email', data)
+}
 export {
     login,
     createUser,
@@ -37,4 +52,9 @@ export {
     deleteUser,
     getPagingUser,
     searchUser,
+    retryActive,
+    checkCode,
+    retryPassword,
+    forgotPassword,
+    changeEmail
 }

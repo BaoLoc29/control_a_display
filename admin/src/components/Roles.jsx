@@ -25,7 +25,7 @@ import {
 import toast from "react-hot-toast";
 import ModalCreateRole from "./Auth/ModalCreateRole/index.jsx";
 
-const Role = () => {
+const Roles = () => {
   const [form] = Form.useForm();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,13 +60,12 @@ const Role = () => {
   const handleDeleteRole = async (roleId) => {
     try {
       setLoading(true);
-      await deleteRole(roleId);
+      const result = await deleteRole(roleId);
       setRoles(roles.filter((role) => role._id !== roleId));
-      toast.success("Deleted successfully!");
+      toast.success(result.data.message);
       handleClearSearch();
     } catch (error) {
-      console.log(error);
-      toast.error("Deleted faild!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -83,6 +82,7 @@ const Role = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
+      render: (text) => text || "Loading...",
     },
     {
       title: "Permissions",
@@ -107,6 +107,7 @@ const Role = () => {
       key: "createdAt",
       align: "center",
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      render: (text) => text || "Loading...",
     },
     {
       title: "UpdatedAt",
@@ -114,6 +115,7 @@ const Role = () => {
       key: "updatedAt",
       align: "center",
       sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
+      render: (text) => text || "Loading...",
     },
     {
       title: "Action",
@@ -171,13 +173,12 @@ const Role = () => {
           searchPageIndex,
           pageSize
         );
-        const searchResults = response.data.roles;
-        setSearchResults(searchResults);
+        setSearchResults(response.data.roles);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error("Role isn't found!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -206,35 +207,26 @@ const Role = () => {
       setLoading(true);
       if (!selectedRole) {
         const result = await createRole(value);
-        if (result.data.success) {
-          setRoles([result.data.result, ...roles]);
-          toast.success("Created successfully.!");
-        }
+        setRoles([result.data.result, ...roles]);
+        toast.success(result.data.message);
       } else {
         const result = await editRole(selectedRole, value);
-        if (result.data.success) {
-          setRoles(
-            roles.map((role) => {
-              if (role._id === selectedRole) {
-                return result.data.role;
-              }
-              return role;
-            })
-          );
-          toast.success("Updated successfully!");
-          setSelectedRole(null);
-        }
+        setRoles(
+          roles.map((role) => {
+            if (role._id === selectedRole) {
+              return result.data.role;
+            }
+            return role;
+          })
+        );
+        toast.success(result.data.message);
+        setSelectedRole(null);
       }
       setModalCreateRole(false);
       handleClearSearch();
       form.resetFields();
     } catch (error) {
-      if (error.response) {
-        // Lỗi từ backend
-        const errorMessage =
-          error.response.data.message || "An error occurred!";
-        toast.error(errorMessage);
-      }
+      toast.error(error.response.data.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -316,4 +308,4 @@ const Role = () => {
   );
 };
 
-export default Role;
+export default Roles;

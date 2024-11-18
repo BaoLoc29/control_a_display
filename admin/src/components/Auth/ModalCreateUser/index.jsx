@@ -43,7 +43,6 @@ const ModalCreateUser = ({
   useEffect(() => {
     if (selectedUser) {
       getUser();
-    } else {
       getRole();
     }
   }, [selectedUser, getUser, getRole]);
@@ -84,11 +83,7 @@ const ModalCreateUser = ({
               { required: true, message: "Email cannot be empty!" },
             ]}
           >
-            <Input
-              placeholder="E-mail"
-              disabled={!!selectedUser}
-              size="large"
-            />
+            <Input placeholder="E-mail" size="large" />
           </Form.Item>
 
           <label htmlFor="role" className="block text-sm font-bold mb-1">

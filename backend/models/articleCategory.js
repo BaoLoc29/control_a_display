@@ -24,6 +24,11 @@ const ArticleCategory = new mongoose.Schema({
     thumbnail: {
         type: String,
         required: true
+    },
+    menu: {
+        type: String,
+        required: true,
+        ref: "Menu"
     }
 }, { timestamps: true })
 // Định dạng lại createdAt và updatedAt khi trả về JSON

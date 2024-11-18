@@ -42,16 +42,11 @@ const Profile = () => {
     try {
       setLoading(true);
       const result = await editUser(userProfile._id, values);
-      if (result.data.success) {
-        setUserProfile(result.data.user);
-        toast.success("User information updated successfully.");
-        window.location.reload();
-      } else if (result.data.message) {
-        toast.error(result.data.message);
-      }
+      setUserProfile(result.data.user);
+      toast.success(result.data.message);
+      navigate("/my-profile");
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to update user information!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -66,16 +61,11 @@ const Profile = () => {
         oldPassword,
         newPassword
       );
-      if (result.data.success) {
-        setUserProfile(result.data.user);
-        toast.success("Change password successful!");
-        navigate("/");
-      } else {
-        const errorMessage = result.data.error || "Change password faild!";
-        toast.error(errorMessage);
-      }
+      setUserProfile(result.data.user);
+      toast.success(result.data.message);
+      navigate("/");
     } catch (error) {
-      toast.error("Change password faild!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

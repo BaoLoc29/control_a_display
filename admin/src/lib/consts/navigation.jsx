@@ -2,7 +2,7 @@ import { HiOutlineViewGrid } from "react-icons/hi";
 import { BiSolidBookContent } from "react-icons/bi";
 import { FaUserTie } from "react-icons/fa";
 import { RiShieldUserFill } from "react-icons/ri";
-import { BsBookHalf } from "react-icons/bs";
+import { BsBookHalf, BsMenuButtonWideFill } from "react-icons/bs";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
@@ -10,6 +10,12 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     label: "Dashboard",
     path: "/",
     icon: <HiOutlineViewGrid />,
+  },
+  {
+    key: "menu",
+    label: "Menus",
+    path: "/menus",
+    icon: <BsMenuButtonWideFill />,
   },
   {
     key: "article-category",

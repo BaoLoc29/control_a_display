@@ -19,24 +19,20 @@ const EditArticleCategory = () => {
     try {
       setLoading(true);
       const result = await getArticleCategoryById(articleCategoryId);
-      if (result.data.success) {
+      form.setFieldsValue({
+        name: result.data.articleCategory.name,
+        slug: result.data.articleCategory.slug,
+        seo_keywords: result.data.articleCategory.seo_keywords,
+        seo_title: result.data.articleCategory.seo_title,
+        seo_description: result.data.articleCategory.seo_description,
+      });
+      if (result.data.articleCategory.thumbnail) {
         form.setFieldsValue({
-          name: result.data.articleCategory.name,
-          slug: result.data.articleCategory.slug,
-          seo_keywords: result.data.articleCategory.seo_keywords,
-          seo_title: result.data.articleCategory.seo_title,
-          seo_description: result.data.articleCategory.seo_description,
+          thumbnail: result.data.articleCategory.thumbnail,
         });
-        if (result.data.articleCategory.thumbnail) {
-          form.setFieldsValue({
-            thumbnail: result.data.articleCategory.thumbnail,
-          });
-        }
-      } else {
-        toast.error("Failed to fetch article category data");
       }
     } catch (error) {
-      toast.error("Error fetching article category");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -76,12 +72,10 @@ const EditArticleCategory = () => {
     try {
       setLoading(true);
       const result = await editArticleCategory(articleCategoryId, data);
-      if (result.data.success) {
-        toast.success("Category updated successfully!");
-        navigate("/article-category");
-      }
+      toast.success(result.data.message);
+      navigate("/article-category");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Error updating category");
+      toast.error(error.response?.data?.message);
     } finally {
       setLoading(false);
     }

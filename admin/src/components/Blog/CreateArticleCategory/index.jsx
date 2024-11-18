@@ -39,14 +39,12 @@ const CreateArticleCategory = () => {
       data.append("thumbnail", thumbnail);
 
       const result = await createArticleCategory(data);
-      if (result.data.success) {
-        toast.success("Created successfully!");
-        navigate("/article-category");
-        form.resetFields();
-        setThumbnail(null);
-      }
+      toast.success(result.data.message);
+      navigate("/article-category");
+      form.resetFields();
+      setThumbnail(null);
     } catch (error) {
-      toast.error(error.response?.data?.error || "Error creating category");
+      toast.error(error.response?.data?.message);
     } finally {
       setLoading(false);
     }

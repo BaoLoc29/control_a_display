@@ -17,14 +17,12 @@ export const createPermission = async (req, res) => {
 
         if (validate.error) {
             return res.status(400).json({
-                success: false,
-                error: validate.error.details[0].message
+                message: validate.error.details[0].message
             })
         }
         const permission = await Permission.create({ name })
         return res.status(201).json({
-            success: true,
-            message: "Permission created successfully",
+            message: "Created successfully!",
             data: permission
         })
     } catch (error) {
