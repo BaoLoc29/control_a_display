@@ -249,7 +249,6 @@ export const editUser = async (req, res) => {
         // If the email is different, just send verification without updating
         if (email !== user.email) {
             const oldEmail = user.email;
-            // Tạo mã xác thực mới
             const codeId = uuidv4();
             const codeExpired = dayjs().add(5, 'minutes');
 
@@ -257,9 +256,9 @@ export const editUser = async (req, res) => {
             user.codeExpired = codeExpired;
             user.isActive = false
             await user.save();
-            // Send notification to the old email address
+
             await sendOldEmail(oldEmail, name, email, codeId);
-            return res.status(200).json({
+            return res.status(209).json({
                 message: "Please verify the new email!",
             });
         }
