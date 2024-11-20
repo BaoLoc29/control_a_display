@@ -129,7 +129,8 @@ const Roles = () => {
               onClick={() => handleOpenEditModal(row._id)}
             />
             <Popconfirm
-              title="Delete role user!"
+              placement="left"
+              title="Delete role user"
               description="Are you sure you want to delete this role?"
               onConfirm={() => handleDeleteRole(row._id)}
               okText="Ok"
@@ -167,12 +168,7 @@ const Roles = () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchRole(
-          searchQuery,
-          selectedOption,
-          searchPageIndex,
-          pageSize
-        );
+        const response = await searchRole(searchQuery, selectedOption);
         setSearchResults(response.data.roles);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
@@ -187,6 +183,7 @@ const Roles = () => {
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    setSearchPageIndex(1);
     getRoles();
   };
 
@@ -195,9 +192,8 @@ const Roles = () => {
       setPageSize(pageSize);
       setPageIndex(pageIndex);
     } else {
-      setPageSize(pageSize);
       setSearchPageIndex(pageIndex);
-      handleSearch();
+      handleSearch(pageSize);
       console.log(totalPages);
     }
   };

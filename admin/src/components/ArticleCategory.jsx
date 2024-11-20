@@ -101,6 +101,7 @@ const ArticleCategory = () => {
               className="text-blue-500 text-2xl hover:text-blue-700 cursor-pointer"
             />
             <Popconfirm
+              placement="left"
               title="Delete article category"
               description="Are you sure you want to delete article category?"
               okText="Ok"

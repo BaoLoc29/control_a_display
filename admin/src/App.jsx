@@ -16,6 +16,7 @@ import SessionExpiredPopup from "./components/Auth/SessionExpiredPopup/index.jsx
 import EditArticleCategory from "./components/Blog/EditArticleCategory/index.jsx";
 import CreateArticleCategory from "./components/Blog/CreateArticleCategory/index.jsx";
 import Menus from "./components/Menus.jsx";
+import Permissions from "./components/Permissions.jsx";
 
 const App = () => {
   const user = useSelector((state) => state.users.user);
@@ -56,6 +57,7 @@ const App = () => {
               <Route path="users" element={<Users />} />
               <Route path="my-profile" element={<Profile />} />
               <Route path="roles" element={<Roles />} />
+              <Route path="permissions" element={<Permissions />} />
               <Route path="menus" element={<Menus />} />
               <Route path="article-category" element={<ArticleCategory />} />
               <Route
@@ -66,7 +68,6 @@ const App = () => {
                 path="article-category/create"
                 element={<CreateArticleCategory />}
               />
-
             </Route>
           </Route>
         )}

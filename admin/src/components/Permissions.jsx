@@ -2,49 +2,63 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Breadcrumb,
   Button,
+  Form,
   Input,
   Popconfirm,
   Table,
   Pagination,
-  Form,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import {
-  createMenu,
-  deleteMenu,
-  editMenu,
-  getPagingMenu,
-  searchMenu,
-} from "../services/menu.js";
+  createPermission,
+  deletePermission,
+  editPermission,
+  getPagingPermission,
+  searchPermission,
+} from "../services/permission.js";
 import toast from "react-hot-toast";
-import ModalCreateMenu from "./Blog/ModalCreateMenu/index.jsx";
+import ModalCreatePermission from "./Auth/ModalCreatePermission/index.jsx";
 
-const Menus = () => {
-  const [menus, setMenus] = useState([]);
+const Permissions = () => {
+  const [form] = Form.useForm();
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalDoc, setTotalDoc] = useState(0);
+  const [modalPermission, setModalPermission] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotalDoc, setSearchTotalDoc] = useState(0);
   const [searchPageIndex, setSearchPageIndex] = useState(1);
-  const [modalCreateMenu, setModalCreateMenu] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState(null);
-  const [form] = Form.useForm();
 
-  const handleOpenEditModal = (menuId) => {
-    setModalCreateMenu(true);
-    setSelectedMenu(menuId);
+  const handleOpenEditModal = (id) => {
+    setModalPermission(true);
+    setSelectedPermission(id);
   };
 
   const handelCloseModal = () => {
     form.resetFields();
-    setModalCreateMenu(false);
-    setSelectedMenu(null);
+    setModalPermission(false);
+    setSelectedPermission(null);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      setLoading(true);
+      const result = await deletePermission(id);
+      setPermissions(permissions.filter((permission) => permission._id !== id));
+      toast.success(result.data.message);
+      handleClearSearch();
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -54,31 +68,9 @@ const Menus = () => {
       align: "center",
     },
     {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
-      align: "center",
-      render: (text) => text || "Loading...",
-    },
-    {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
-      align: "center",
-      render: (text) => text || "Loading...",
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      width: 200,
-      align: "center",
-      render: (text) => text || "Loading...",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
+      title: "Permission name",
+      dataIndex: "name",
+      key: "name",
       align: "center",
       render: (text) => text || "Loading...",
     },
@@ -87,7 +79,6 @@ const Menus = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: 100,
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: (text) => text || "Loading...",
     },
@@ -96,7 +87,6 @@ const Menus = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       align: "center",
-      width: 100,
       sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
       render: (text) => text || "Loading...",
     },
@@ -108,17 +98,17 @@ const Menus = () => {
         return (
           <div className="flex gap-2 justify-center">
             <FaEdit
-              onClick={() => handleOpenEditModal(row._id)}
               className="text-blue-500 text-2xl hover:text-blue-700 cursor-pointer"
+              onClick={() => handleOpenEditModal(row._id)}
             />
             <Popconfirm
               placement="left"
-              title="Delete menu"
-              description="Are you sure you want to delete this menu?"
+              title="Delete permission!"
+              description="Are you sure you want to delete this permission?"
+              onConfirm={() => handleDelete(row._id)}
               okText="Ok"
               cancelText="Cancel"
               style={{ cursor: "pointer" }}
-              onConfirm={() => handleDelete(row._id)}
             >
               <MdDelete className="text-red-500 text-2xl hover:text-red-700 cursor-pointer" />
             </Popconfirm>
@@ -128,93 +118,36 @@ const Menus = () => {
     },
   ];
 
-  const getMenus = useCallback(async () => {
+  // getPermission
+  const getPermissions = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getPagingMenu({ pageSize, pageIndex });
-      setMenus(result.data.menus);
+      const result = await getPagingPermission({ pageSize, pageIndex });
+      setPermissions(result.data.permission);
       setTotalPages(result.data.totalPages);
       setTotalDoc(result.data.count);
     } catch (error) {
-      console.error("Failed to retrieve menu data.", error);
+      console.log(error);
     } finally {
       setLoading(false);
     }
   }, [pageSize, pageIndex]);
 
   useEffect(() => {
-    getMenus();
-  }, [getMenus]);
-
-  const handlePaginationChange = (pageIndex, pageSize) => {
-    if (searchQuery.trim() === "") {
-      setPageSize(pageSize);
-      setPageIndex(pageIndex);
-      getMenus();
-    } else {
-      setSearchPageIndex(pageIndex);
-      handleSearch(pageSize);
-      console.log(totalPages);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      setLoading(true);
-      const result = await deleteMenu(id);
-      setMenus(menus.filter((item) => item._id !== id));
-      toast.success(result.data.message);
-    } catch (error) {
-      toast.error(error.response.data.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateMenu = async (value) => {
-    try {
-      setLoading(true);
-      const { confirm, ...dataToSend } = value;
-      if (!selectedMenu) {
-        const result = await createMenu(dataToSend);
-        setMenus([result.data.result, ...menus]);
-        toast.success(result.data.message);
-      } else {
-        const result = await editMenu(selectedMenu, value);
-        setMenus(
-          menus.map((menu) => {
-            if (menu._id === selectedMenu) {
-              return result.data.menu;
-            }
-            return menu;
-          })
-        );
-        toast.success(result.data.message);
-        setSelectedMenu(null);
-      }
-      setModalCreateMenu(false);
-      handleClearSearch();
-      form.resetFields();
-    } catch (error) {
-      toast.error(
-        selectedMenu ? error.response.data.message : error.response.data.message
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    getPermissions();
+  }, [getPermissions]);
 
   const handleSearch = async () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchMenu(searchQuery);
-        setSearchResults(response.data.menus);
+        const response = await searchPermission(searchQuery);
+        setSearchResults(response.data.permission);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error("Menu not found!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -224,8 +157,50 @@ const Menus = () => {
     setSearchQuery("");
     setSearchResults([]);
     setSearchPageIndex(1);
-    getMenus();
+    getPermissions();
   };
+
+  const handlePaginationChange = (pageIndex, pageSize) => {
+    if (searchQuery.trim() === "") {
+      setPageSize(pageSize);
+      setPageIndex(pageIndex);
+    } else {
+      setSearchPageIndex(pageIndex);
+      handleSearch(pageSize);
+      console.log(totalPages);
+    }
+  };
+
+  const handleCreate = async (values) => {
+    try {
+      setLoading(true);
+      if (!selectedPermission) {
+        const result = await createPermission(values);
+        setPermissions([result.data.result, ...permissions]);
+        toast.success(result.data.message);
+      } else {
+        const result = await editPermission(selectedPermission, values);
+        setPermissions(
+          permissions.map((permission) => {
+            if (permission._id === selectedPermission) {
+              return result.data.permission;
+            }
+            return permission;
+          })
+        );
+        toast.success(result.data.message);
+        setSelectedPermission(null);
+      }
+      setModalPermission(false);
+      handleClearSearch();
+      form.resetFields();
+    } catch (error) {
+      toast.error(error.response.data.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center pb-4 pt-0">
@@ -236,10 +211,10 @@ const Menus = () => {
               title: "Home",
             },
             {
-              title: "Blogs",
+              title: "Auth",
             },
             {
-              title: "Menu",
+              title: "Permissions",
             },
           ]}
         />
@@ -261,9 +236,9 @@ const Menus = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setModalCreateMenu(true)}
+            onClick={() => setModalPermission(true)}
           >
-            Create menu
+            Create
           </Button>
         </div>
       </div>
@@ -271,7 +246,7 @@ const Menus = () => {
         className="shadow-md mt-2"
         loading={loading}
         columns={columns}
-        dataSource={searchResults.length > 0 ? searchResults : menus}
+        dataSource={searchResults.length > 0 ? searchResults : permissions}
         pagination={false}
         scroll={{ x: 1000 }}
       />
@@ -284,17 +259,17 @@ const Menus = () => {
         showSizeChanger
         onChange={handlePaginationChange}
       />
-      <ModalCreateMenu
+      <ModalCreatePermission
         form={form}
         loading={loading}
-        title={selectedMenu ? "Update menu" : "Create menu"}
-        isModalOpen={modalCreateMenu}
+        title={selectedPermission ? "Update permission" : "Create permission"}
+        isModalOpen={modalPermission}
         handleCancel={handelCloseModal}
-        handleOk={handleCreateMenu}
-        selectedMenu={selectedMenu}
+        handleOk={handleCreate}
+        selectedPermission={selectedPermission}
       />
     </div>
   );
 };
 
-export default Menus;
+export default Permissions;

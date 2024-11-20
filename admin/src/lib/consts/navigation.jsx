@@ -2,6 +2,7 @@ import { HiOutlineViewGrid } from "react-icons/hi";
 import { BiSolidBookContent } from "react-icons/bi";
 import { FaUserTie } from "react-icons/fa";
 import { RiShieldUserFill } from "react-icons/ri";
+import { FaUsersGear } from "react-icons/fa6";
 import { BsBookHalf, BsMenuButtonWideFill } from "react-icons/bs";
 
 export const DASHBOARD_SIDEBAR_LINKS = [
@@ -40,5 +41,11 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     label: "Role",
     path: "/roles",
     icon: <RiShieldUserFill />,
+  },
+  {
+    key: "permission",
+    label: "Permissions",
+    path: "/permissions",
+    icon: <FaUsersGear />,
   },
 ];

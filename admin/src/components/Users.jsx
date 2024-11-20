@@ -119,7 +119,8 @@ const Users = () => {
               onClick={() => handleOpenEditModal(row._id)}
             />
             <Popconfirm
-              title="Delete employee account"
+              placement="left"
+              title="Delete user account"
               description="Are you sure you want to delete this account?"
               onConfirm={() => handleDeleteUser(row._id)}
               okText="Ok"
@@ -209,12 +210,7 @@ const Users = () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchUser(
-          searchQuery,
-          selectedOption,
-          searchPageIndex,
-          pageSize
-        );
+        const response = await searchUser(searchQuery, selectedOption);
         setSearchResults(response.data.users);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
@@ -230,6 +226,7 @@ const Users = () => {
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    setSearchPageIndex(1);
     getUsers();
   };
 
@@ -239,9 +236,8 @@ const Users = () => {
       setPageSize(pageSize);
       setPageIndex(pageIndex);
     } else {
-      setPageSize(pageSize);
       setSearchPageIndex(pageIndex);
-      handleSearch();
+      handleSearch(pageSize);
       console.log(totalPages);
     }
   };
