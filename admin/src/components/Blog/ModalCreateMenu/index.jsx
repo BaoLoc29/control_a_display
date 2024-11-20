@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState } from "react";
-import { Form, Input, Modal, Button, Spin } from "antd";
+import { Form, Input, Modal, Button, Spin, Select } from "antd";
 import { getMenuById } from "../../../services/menu.js";
 
 const ModalCreateMenu = ({
@@ -105,7 +105,10 @@ const ModalCreateMenu = ({
               },
             ]}
           >
-            <Input placeholder="Type" size="large" />
+            <Select placeholder="Type" size="large">
+              <Select.Option value="Link">Link</Select.Option>
+              <Select.Option value="SubMenu">SubMenu</Select.Option>
+            </Select>
           </Form.Item>
 
           <div className="flex justify-end mt-5">

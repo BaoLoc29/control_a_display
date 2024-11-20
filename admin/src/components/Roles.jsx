@@ -76,19 +76,21 @@ const Roles = () => {
       title: "STT",
       render: (_, __, index) => (pageIndex - 1) * pageSize + index + 1,
       align: "center",
+      width: 50,
     },
     {
       title: "Role Name",
       dataIndex: "name",
       key: "name",
       align: "center",
+      width: 150,
       render: (text) => text || "Loading...",
     },
     {
       title: "Permissions",
       dataIndex: "permissions",
       key: "permissions",
-      width: 300,
+      width: 500,
       render: (permissions) => (
         <div className="flex flex-wrap gap-y-2">
           {Array.isArray(permissions) ? (
@@ -106,6 +108,7 @@ const Roles = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
+      width: 100,
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: (text) => text || "Loading...",
     },
@@ -114,6 +117,7 @@ const Roles = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       align: "center",
+      width: 100,
       sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
       render: (text) => text || "Loading...",
     },
@@ -121,6 +125,7 @@ const Roles = () => {
       title: "Action",
       key: "action",
       align: "center",
+      width: 100,
       render: (row) => {
         return (
           <div className="flex gap-2 justify-center">

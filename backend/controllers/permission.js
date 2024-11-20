@@ -5,8 +5,19 @@ export const createPermission = async (req, res) => {
     try {
         const name = toSlug(req.body.name)
         if (!name) {
-            return res.status(400).json({ message: "Name is required" })
+            return res.status(400).json({ message: "Name is required!" })
         }
+
+        // Kiểm tra nếu name bắt đầu bằng các tiền tố được yêu cầu
+        const validPrefixes = ["view-", "create-", "edit-", "delete-"];
+        const hasValidPrefix = validPrefixes.some((prefix) => name.startsWith(prefix));
+
+        if (!hasValidPrefix) {
+            return res.status(400).json({
+                message: "Invalid name permission!"
+            });
+        }
+
         const permission = await Permission.create({ name })
         return res.status(201).json({
             message: "Created successfully!",
@@ -21,11 +32,20 @@ export const editPermission = async (req, res) => {
         const { id } = req.params
         const name = toSlug(req.body.name)
         if (!name) {
-            return res.status(400).json({ message: "Name is required" })
+            return res.status(400).json({ message: "Name is required!" })
+        }
+        // Kiểm tra nếu name bắt đầu bằng các tiền tố được yêu cầu
+        const validPrefixes = ["view-", "create-", "edit-", "delete-"];
+        const hasValidPrefix = validPrefixes.some((prefix) => name.startsWith(prefix));
+
+        if (!hasValidPrefix) {
+            return res.status(400).json({
+                message: "Invalid name permission!"
+            });
         }
         const permission = await Permission.findByIdAndUpdate(id, { name }, { new: true })
         if (!permission) {
-            return res.status(404).json({ message: "Permission not found" })
+            return res.status(404).json({ message: "Permission not found!" })
         }
         return res.status(200).json({
             message: "Updated successfully!",
@@ -66,7 +86,7 @@ export const deletedPermission = async (req, res) => {
         const { id } = req.params
         const permission = await Permission.findByIdAndDelete(id)
         if (!permission) {
-            return res.status(404).json({ message: "Permission not found" })
+            return res.status(404).json({ message: "Permission not found!" })
         }
         return res.status(200).json({
             message: "Deleted successfully!"
@@ -92,7 +112,7 @@ export const getPermissionById = async (req, res) => {
         const { id } = req.params
         const permission = await Permission.findById(id)
         if (!permission) {
-            return res.status(404).json({ message: "Permission not found" })
+            return res.status(404).json({ message: "Permission not found!" })
         }
         return res.status(200).json({ permission })
     } catch (error) {

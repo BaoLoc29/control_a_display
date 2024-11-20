@@ -238,7 +238,7 @@ const Permissions = () => {
             icon={<PlusOutlined />}
             onClick={() => setModalPermission(true)}
           >
-            Create
+            Create new
           </Button>
         </div>
       </div>
