@@ -10,8 +10,7 @@ import { sendRetryPassword, sendVerificationEmail, sendOldEmail } from "../utils
 export const createUser = async (req, res) => {
     const { hashSync, genSaltSync } = bcrypt;
     try {
-        const data = req.body
-        const { email, password, role } = data
+        const { email, password, name, roleId } = req.body
 
         const createSchema = joi.object({
             name: joi.string().required().messages({
@@ -25,13 +24,11 @@ export const createUser = async (req, res) => {
                 'string.min': 'Password must have at least 6 characters!',
                 'string.empty': 'Password is required!',
             }),
-            role: joi.string().required().messages({
-                'string.empty': 'Role is required!',
-            })
-
+            roleId: joi.string().required().messages({
+                'string.empty': 'RoleId is required!',
+            }),
         });
-
-        const { error } = createSchema.validate(data)
+        const { error } = createSchema.validate({ email, password, name, roleId })
         if (error) {
             return res.status(400).json({
                 message: error.details.map((e) => e.message),
@@ -43,27 +40,33 @@ export const createUser = async (req, res) => {
             return res.status(401).json({ message: "This email is already in use!" })
         }
 
-        const salt = genSaltSync();
-        const hashedPassword = hashSync(password, salt);
-
-
-        // Check role
-        const findRole = await Role.findOne({ name: role })
+        // Kiểm tra xem roleId có tồn tại không
+        const findRole = await Role.findById(roleId);
         if (!findRole) {
-            return res.status(401).json({ message: `Role ${role} does not exist!` });
+            return res.status(404).json({ message: "Role not found!" });
         }
 
-        const result = await User.create({ ...data, password: hashedPassword })
+        const salt = genSaltSync();
+        const hashedPassword = hashSync(password, salt);
+        const newUser = await User.create({
+            email,
+            name,
+            password: hashedPassword,
+            roleId,
+        })
+
+        // Cập nhật userId vào Role
+        findRole.userIds.push(newUser._id);
+        await findRole.save();
 
         return res.status(200).json({
             message: 'Created successfully!',
             user: {
-                _id: result._id,
-                email: result.email,
-                name: result.name,
+                _id: newUser._id,
+                email: newUser.email,
+                name: newUser.name,
             }
         })
-
     } catch (error) {
         return res.status(500).json({ message: error.message })
     }
@@ -205,7 +208,7 @@ export const changePassword = async (req, res) => {
 };
 export const editUser = async (req, res) => {
     try {
-        const { name, email, role } = req.body;
+        const { name, email, roleId } = req.body;
         const { id } = req.params;
 
         const user = await User.findById(id);
@@ -222,12 +225,12 @@ export const editUser = async (req, res) => {
                 'string.email': 'Invalid email!',
                 'string.empty': 'Email is required!'
             }),
-            role: joi.string().required().messages({
+            roleId: joi.string().required().messages({
                 'string.empty': 'Role user is required!'
             })
         });
 
-        const { error } = editSchema.validate({ name, email, role });
+        const { error } = editSchema.validate({ name, email, roleId });
         if (error) {
             return res.status(400).json({
                 message: error.details.map(e => e.message)
@@ -238,12 +241,6 @@ export const editUser = async (req, res) => {
         const findUserByEmail = await User.findOne({ email });
         if (findUserByEmail && findUserByEmail._id.toString() !== id) {
             return res.status(400).json({ message: "Email already in use!" });
-        }
-
-        // Check if the role exists
-        const findRole = await Role.findOne({ name: role });
-        if (!findRole) {
-            return res.status(401).json({ message: `Role ${role} does not exist!` });
         }
 
         // If the email is different, just send verification without updating
@@ -263,15 +260,40 @@ export const editUser = async (req, res) => {
             });
         }
 
-        // If the email is the same, update the user data
-        const updateFields = { name, role };
-        const updatedUser = await User.findByIdAndUpdate(id, updateFields, { new: true }).select("-password");
+        // Kiểm tra và xử lý khi roleId thay đổi
+        if (roleId !== user.roleId.toString()) {
+            const oldRole = await Role.findById(user.roleId);
+            const newRole = await Role.findById(roleId);
+
+            if (!newRole) {
+                return res.status(400).json({ message: "Invalid roleId provided!" });
+            }
+
+            // Xóa người dùng khỏi role cũ
+            if (oldRole) {
+                oldRole.userIds = oldRole.userIds.filter(
+                    (userId) => userId.toString() !== id
+                );
+                await oldRole.save();
+            }
+
+            // Thêm người dùng vào role mới
+            newRole.userIds.push(user._id);
+            await newRole.save();
+        }
+
+        // Cập nhật thông tin khác của người dùng
+        const updateFields = { name, roleId };
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            updateFields,
+            { new: true, select: '-password' }
+        );
 
         return res.status(200).json({
             message: "Updated successfully!",
-            updatedUser
+            user: updatedUser
         });
-
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -293,7 +315,9 @@ export const getPagingUser = async (req, res) => {
         const query = req.query
         const users = await User.find()
             .skip(query.pageSize * query.pageIndex - query.pageSize)
-            .limit(query.pageSize).sort({ createdAt: "desc" })
+            .limit(query.pageSize)
+            .sort({ createdAt: "desc" })
+            .populate("roleId", "name")
 
         const countUsers = await User.countDocuments()
         const totalPage = Math.ceil(countUsers / query.pageSize)
@@ -320,7 +344,7 @@ export const searchUser = async (req, res) => {
             searchField = { email: { $regex: keyword, $options: 'i' } };
         }
 
-        const users = await User.find({ ...searchField });
+        const users = await User.find({ ...searchField }).populate("roleId", "name");
         if (!users || users.length === 0) {
             return res.status(404).json({ message: "User is not found!" });
         }

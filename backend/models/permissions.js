@@ -3,8 +3,15 @@ import mongoose from "mongoose";
 const Permission = new mongoose.Schema({
     name: {
         type: String,
-        required: true
-    }
+        required: true,
+        unique: true
+    },
+    roleIds: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'roles'
+        }
+    ]
 }, { timestamps: true })
 // Định dạng lại createdAt và updatedAt khi trả về JSON
 Permission.methods.toJSON = function () {

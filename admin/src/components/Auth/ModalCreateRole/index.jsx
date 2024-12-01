@@ -21,7 +21,7 @@ const ModalCreateRole = ({
       const result = await getRoleById(selectedRole);
       form.setFieldsValue({
         name: result.data.role.name,
-        permissions: result.data.role.permissions,
+        permissionIds: result.data.role.permissionIds,
       });
       setLoadingData(false);
     } catch (error) {
@@ -69,11 +69,14 @@ const ModalCreateRole = ({
             <Input placeholder="Role name" size="large" />
           </Form.Item>
 
-          <label htmlFor="permissions" className="block text-sm font-bold mb-1">
+          <label
+            htmlFor="permissionIds"
+            className="block text-sm font-bold mb-1"
+          >
             Permissions: <span className="text-red-500">*</span>
           </label>
           <Form.Item
-            name="permissions"
+            name="permissionIds"
             style={{ marginBottom: 10 }}
             rules={[
               { required: true, message: "Permissions cannot be empty!" },
@@ -86,11 +89,13 @@ const ModalCreateRole = ({
                 width: "100%",
               }}
               placeholder="Select permissions"
-              onChange={(value) => form.setFieldsValue({ permissions: value })}
+              onChange={(value) =>
+                form.setFieldsValue({ permissionIds: value })
+              }
             >
-              {permissionList.map((permission) => (
-                <Select.Option key={permission._id} value={permission.name}>
-                  {permission.name}
+              {permissionList.map((permissions) => (
+                <Select.Option key={permissions._id} value={permissions._id}>
+                  {permissions.name}
                 </Select.Option>
               ))}
             </Select>

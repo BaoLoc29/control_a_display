@@ -5,13 +5,10 @@ import {
   Form,
   Input,
   Popconfirm,
-  Select,
-  Space,
   Table,
   Pagination,
   Tag,
 } from "antd";
-import { TiDelete } from "react-icons/ti";
 import { PlusOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
@@ -36,15 +33,9 @@ const Roles = () => {
   const [modalCreateRole, setModalCreateRole] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOption, setSelectedOption] = useState("name");
   const [searchResults, setSearchResults] = useState([]);
   const [searchTotalDoc, setSearchTotalDoc] = useState(0);
   const [searchPageIndex, setSearchPageIndex] = useState(1);
-
-  const options = [
-    { value: "name", label: "Role name" },
-    { value: "permissions", label: "Permissions" },
-  ];
 
   const handleOpenEditModal = (roleId) => {
     setModalCreateRole(true);
@@ -88,14 +79,14 @@ const Roles = () => {
     },
     {
       title: "Permissions",
-      dataIndex: "permissions",
-      key: "permissions",
+      dataIndex: "permissionIds",
+      key: "permissionIds",
       width: 500,
-      render: (permissions) => (
+      render: (permissionIds) => (
         <div className="flex flex-wrap gap-y-2">
-          {Array.isArray(permissions) ? (
-            permissions.map((permission) => (
-              <Tag key={permission}>{permission}</Tag>
+          {Array.isArray(permissionIds) ? (
+            permissionIds.map((permission) => (
+              <Tag key={permission._id}>{permission.name}</Tag>
             ))
           ) : (
             <Tag>Loading...</Tag>
@@ -173,7 +164,7 @@ const Roles = () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchRole(searchQuery, selectedOption);
+        const response = await searchRole(searchQuery);
         setSearchResults(response.data.roles);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
@@ -251,27 +242,21 @@ const Roles = () => {
           ]}
         />
         <div className="flex flex-col lg:flex-row w-full gap-2 lg:justify-between">
-          <Space.Compact className="w-full lg:w-[32rem] relative">
-            <Select
-              size="large"
-              defaultValue="Role name"
-              options={options}
-              onChange={(value) => setSelectedOption(value)}
-            />
-            <Input
-              placeholder="Search..."
-              size="large"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onPressEnter={handleSearch}
-            />
-            {searchQuery && (
-              <TiDelete
-                className="text-gray-400 text-xl absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer z-10"
-                onClick={handleClearSearch}
-              />
-            )}
-          </Space.Compact>
+          <Input
+            placeholder="Search..."
+            className="w-full lg:w-1/2"
+            size="large"
+            value={searchQuery}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchQuery(value);
+
+              if (value === "") {
+                handleClearSearch();
+              }
+            }}
+            onPressEnter={handleSearch}
+          />
           <Button
             type="primary"
             size="large"

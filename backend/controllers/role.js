@@ -1,10 +1,13 @@
 import Role from "../models/role.js"
 import Permission from "../models/permissions.js";
 import joi from "joi";
+import toSlug from "../utils/toSlug.js";
+import mongoose from "mongoose";
 
 export const createRole = async (req, res) => {
     try {
-        const { name, permissions } = req.body;
+        const name = toSlug(req.body.name)
+        const { permissionIds } = req.body;
 
         // Validation schema với Joi
         const createSchema = joi.object({
@@ -13,13 +16,13 @@ export const createRole = async (req, res) => {
                 "string.empty": "Name must not be empty",
                 "any.required": "Name is required"
             }),
-            permissions: joi.array().items(joi.string()).required().messages({
+            permissionIds: joi.array().items(joi.string()).required().messages({
                 "array.base": "Permissions must be an array",
                 "any.required": "Permissions are required",
             })
         });
 
-        const { error } = createSchema.validate({ name, permissions });
+        const { error } = createSchema.validate({ name, permissionIds });
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
@@ -30,21 +33,32 @@ export const createRole = async (req, res) => {
             return res.status(400).json({ message: "This role is already in use!" });
         }
 
-        // Tìm các quyền tương ứng dựa trên name trong bảng Permission
-        const foundPermissions = await Permission.find({ name: { $in: permissions } });
-        if (foundPermissions.length !== permissions.length) {
-            return res.status(400).json({
-                message: "Invalid or nonexistent permissions!"
-            });
+        // Tìm kiếm các quyền trong Permission
+        const permissions = await Permission.find({ _id: { $in: permissionIds } });
+        if (permissions.length !== permissionIds.length) {
+            return res.status(404).json({ message: "Some permissions not found!" });
         }
 
-        // Lưu trực tiếp tên quyền vào Role
-        const permissionNames = foundPermissions.map(permission => permission.name);
+        // Tạo Role mới
+        const newRole = await Role.create({
+            name,
+            permissionIds
+        });
 
-        // Tạo Role mới với ObjectId của permissions
-        const newRole = await Role.create({ name, permissions: permissionNames });
+        // Cập nhật vào bảng trường roleIds của bảng Permission
+        const updatePermissions = permissionIds.map(async (permissionId) => {
+            const permission = await Permission.findById(permissionId);
+            if (!permission.roleIds) {
+                permission.roleIds = [];
+            }
+            permission.roleIds.push(newRole._id);
+            await permission.save();
+        });
+
+        // Đợi tất cả các bản cập nhật hoàn thành
+        await Promise.all(updatePermissions);
+
         return res.status(201).json({
-
             newRole,
             message: "Created successfully!",
         });
@@ -55,7 +69,8 @@ export const createRole = async (req, res) => {
 };
 export const editRole = async (req, res) => {
     try {
-        const { name, permissions } = req.body;
+        const name = toSlug(req.body.name)
+        const { permissionIds } = req.body;
         const { id } = req.params;
 
         const createSchema = joi.object({
@@ -63,44 +78,35 @@ export const editRole = async (req, res) => {
                 "string.base": "Name must be a string",
                 "string.empty": "Name must not be empty",
             }),
-            permissions: joi.array().items(joi.string()).required().messages({
+            permissionIds: joi.array().items(joi.string()).required().messages({
                 "array.base": "Permissions must be an array",
                 "any.required": "Permissions are required",
             })
-
         })
 
-        const { error } = createSchema.validate({ name, permissions });
+        const { error } = createSchema.validate({ name, permissionIds });
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
 
-        const findRoleById = await Role.findById(id)
-        if (!findRoleById) {
-            return res.status(400).json({ message: "Role is already in use!" });
-        }
+        // Tìm Role
+        const role = await Role.findById(id);
+        if (!role) return res.status(400).json({ message: "Role not found!" });
 
-        // Tìm các quyền tương ứng dựa trên name trong bảng Permission
-        const foundPermissions = await Permission.find({ name: { $in: permissions } });
-        if (foundPermissions.length !== permissions.length) {
-            return res.status(400).json({
+        // Tìm các Permission hợp lệ
+        const foundPermissions = await Permission.find({ _id: { $in: permissionIds } });
+        if (foundPermissions.length !== permissionIds.length) return res.status(400).json({ message: "Invalid permissions!" });
 
-                message: "Invalid or nonexistent permissions!"
-            });
-        }
+        // Cập nhật Role và các Permission liên quan
+        role.name = name;
+        role.permissionIds = permissionIds;
+        await Promise.all([
+            Permission.updateMany({ _id: { $nin: permissionIds } }, { $pull: { roleIds: id } }),
+            Permission.updateMany({ _id: { $in: permissionIds } }, { $addToSet: { roleIds: id } })
+        ]);
+        await role.save();
 
-        // Lưu trực tiếp tên quyền vào Role
-        const permissionNames = foundPermissions.map(permission => permission.name);
-        // Cập nhật role
-        findRoleById.name = name;
-        findRoleById.permissions = permissionNames;
-        await findRoleById.save();
-
-        return res.status(200).json({
-
-            role: findRoleById,
-            message: "Updated successfully!",
-        });
+        return res.status(200).json({ role, message: "Updated successfully!" });
 
     } catch (error) {
         return res.status(500).json({ message: error.message })
@@ -128,7 +134,9 @@ export const getPagingRole = async (req, res) => {
         const query = req.query
         const roles = await Role.find()
             .skip(query.pageSize * query.pageIndex - query.pageSize)
-            .limit(query.pageSize).sort({ createdAt: "desc" })
+            .limit(query.pageSize)
+            .sort({ createdAt: "desc" })
+            .populate('permissionIds', 'name')
 
         const countRoles = await Role.countDocuments()
         const totalPage = Math.ceil(countRoles / query.pageSize)
@@ -140,26 +148,15 @@ export const getPagingRole = async (req, res) => {
 }
 export const searchRole = async (req, res) => {
     try {
-        const { keyword, option } = req.body;
-
-        if (!keyword || !option) {
-            const noKeyword = await Role.find()
-            return res.status(200).json({ noKeyword });
+        const { name } = req.query
+        const roles = await Role
+            .find({ name: { $regex: name, $options: 'i' } })
+            .sort({ createdAt: "desc" })
+            .populate("permissionIds", "name")
+        if (roles.length === 0) {
+            return res.status(404).json({ message: "Role not found!" })
         }
-
-        let searchField = {};
-        if (option === "name") {
-            searchField = { name: { $regex: keyword, $options: 'i' } };
-        } else if (option === "permissions") {
-            searchField = { permissions: { $regex: keyword, $options: 'i' } };
-        }
-
-        const roles = await Role.find({ ...searchField });
-        if (!roles || roles.length === 0) {
-            return res.status(404).json({ message: "Role does not exist!" });
-        }
-        return res.status(200).json({ roles });
-
+        return res.status(200).json({ roles })
     } catch (error) {
         return res.status(500).json({ message: error.message })
     }

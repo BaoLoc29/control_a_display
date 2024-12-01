@@ -18,6 +18,14 @@ export const createPermission = async (req, res) => {
             });
         }
 
+        // Check name của Permission phải là duy nhất
+        const existingPermission = await Permission.findOne({ name });
+        if (existingPermission) {
+            return res.status(400).json({
+                message: "Permission name already exists!"
+            });
+        }
+
         const permission = await Permission.create({ name })
         return res.status(201).json({
             message: "Created successfully!",
@@ -41,6 +49,14 @@ export const editPermission = async (req, res) => {
         if (!hasValidPrefix) {
             return res.status(400).json({
                 message: "Invalid name permission!"
+            });
+        }
+        
+        // Check name của Permission phải là duy nhất
+        const existingPermission = await Permission.findOne({ name });
+        if (existingPermission) {
+            return res.status(400).json({
+                message: "Permission name already exists!"
             });
         }
         const permission = await Permission.findByIdAndUpdate(id, { name }, { new: true })

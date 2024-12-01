@@ -77,10 +77,10 @@ const Users = () => {
     },
     {
       title: "Role",
-      dataIndex: "role",
-      key: "role",
+      dataIndex: "roleId",
+      key: "roleId",
       align: "center",
-      render: (text) => text || "Loading...",
+      render: (roleId) => (roleId ? roleId.name : "Loading..."),
     },
     {
       title: "Active",

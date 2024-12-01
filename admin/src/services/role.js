@@ -12,8 +12,8 @@ const deleteRole = (roleId) => {
 const getPagingRole = ({ pageSize, pageIndex }) => {
     return axiosInstanceAuth.get(`/role/get-paging-role?pageSize=${pageSize}&pageIndex=${pageIndex}`);
 }
-const searchRole = (keyword, option) => {
-    return axiosInstanceAuth.post('/role/search-role', { keyword, option });
+const searchRole = (searchQuery) => {
+    return axiosInstanceAuth.get('/role/search-role', { params: { name: searchQuery } })
 }
 const getRoleById = (roleId) => {
     return axiosInstanceAuth.get(`/role/get-role/${roleId}`)

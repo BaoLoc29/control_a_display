@@ -6,10 +6,16 @@ const Role = new mongoose.Schema({
         required: true,
         unique: true
     },
-    permissions: [
+    permissionIds: [
         {
-            type: String,
-            required: true
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'permissions'
+        }
+    ],
+    userIds: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'users'
         }
     ]
 }, { timestamps: true })

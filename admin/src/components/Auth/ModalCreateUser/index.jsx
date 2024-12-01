@@ -31,7 +31,7 @@ const ModalCreateUser = ({
       form.setFieldsValue({
         name: result.data.user.name,
         email: result.data.user.email,
-        role: result.data.user.role,
+        roleId: result.data.user.roleId,
       });
       setLoadingData(false);
     } catch (error) {
@@ -86,11 +86,11 @@ const ModalCreateUser = ({
             <Input placeholder="E-mail" size="large" />
           </Form.Item>
 
-          <label htmlFor="role" className="block text-sm font-bold mb-1">
+          <label htmlFor="roleId" className="block text-sm font-bold mb-1">
             Role: <span className="text-red-500">*</span>
           </label>
           <Form.Item
-            name="role"
+            name="roleId"
             style={{ marginBottom: 10 }}
             rules={[
               {
@@ -101,7 +101,7 @@ const ModalCreateUser = ({
           >
             <Select placeholder="--Select role--" size="large">
               {roleList.map((roles) => (
-                <Select.Option key={roles._id} value={roles.name}>
+                <Select.Option key={roles._id} value={roles.id}>
                   {roles.name}
                 </Select.Option>
               ))}

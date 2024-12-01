@@ -214,7 +214,7 @@ const Menus = () => {
         setSearchPageIndex(1);
       }
     } catch (error) {
-      toast.error("Menu not found!");
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }

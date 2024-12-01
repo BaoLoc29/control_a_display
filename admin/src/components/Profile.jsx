@@ -35,7 +35,7 @@ const Profile = () => {
       form.setFieldsValue({
         name: result.data.user.name,
         email: result.data.user.email,
-        role: result.data.user.role,
+        roleId: result.data.user.roleId,
       });
     } catch (error) {
       console.error("User is not found", error);

@@ -46,10 +46,10 @@ const ChangeUser = ({ form, loading, handleEditUser, handleCancel }) => {
           <Input className="h-[2.75rem] text-base" loading={loading} />
         </Form.Item>
 
-        <label htmlFor="role" className="block text-base font-bold">
+        <label htmlFor="roleId" className="block text-base font-bold">
           Role: <span className="text-red-500">*</span>
         </label>
-        <Form.Item name="role" style={{ marginTop: 10 }}>
+        <Form.Item name="roleId" style={{ marginTop: 10 }}>
           <Input className="h-[2.75rem] text-base" disabled />
         </Form.Item>
         <div className=" flex gap-2">
