@@ -18,11 +18,15 @@ const searchArticleCategory = (searchQuery) => {
 const getArticleCategoryById = (articleCategoryId) => {
     return axiosInstanceAuth.get(`/article-category/${articleCategoryId}`)
 }
+const getAllArticleCategory = () => {
+    return axiosInstanceAuth.get('/article-category/get-all-category')
+}
 export {
     getArticleCategory,
     createArticleCategory,
     getArticleCategoryById,
     deleteArticleCategory,
     searchArticleCategory,
-    editArticleCategory
+    editArticleCategory,
+    getAllArticleCategory
 }

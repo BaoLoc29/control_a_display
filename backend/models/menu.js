@@ -17,7 +17,13 @@ const Menu = new mongoose.Schema({
         type: String,
         required: true,
         enum: ["Option", "Link"]
-    }
+    },
+    articleCategoryId: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "articleCategories"
+        }
+    ]
 }, { timestamps: true })
 Menu.methods.toJSON = function () {
     const obj = this.toObject();

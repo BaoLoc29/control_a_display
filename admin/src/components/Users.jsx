@@ -263,11 +263,13 @@ const Users = () => {
           <Space.Compact className="w-full lg:w-[32rem] relative">
             <Select
               defaultValue="Email"
+              size="large"
               options={options}
               className="w-[10rem]"
               onChange={(value) => setSelectedOption(value)}
             />
             <Input
+              size="large"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -282,10 +284,11 @@ const Users = () => {
           </Space.Compact>
           <Button
             type="primary"
+            size="large"
             icon={<PlusOutlined />}
             onClick={() => setModalCreateUser(true)}
           >
-            Create user
+            Create new
           </Button>
         </div>
       </div>

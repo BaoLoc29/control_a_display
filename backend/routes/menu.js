@@ -1,9 +1,10 @@
 import express from 'express';
-import { createMenu, deleteMenu, editMenu, getMenuById, getPagingMenu, searchMenu } from '../controllers/menu.js';
+import { createMenu, deleteMenu, editMenu, getAllMenu, getMenuById, getPagingMenu, searchMenu } from '../controllers/menu.js';
 import authentication from './../middlewares/authentication.js';
 import authorization from '../middlewares/authorization.js';
 
 const router = express.Router();
+router.get('/get-all-menu', authentication, authorization(["view-menu"]), getAllMenu)
 router.get('/get-menu/:id', authentication, authorization(["view-menu"]), getMenuById)
 router.get('/get-paging-menu', authentication, authorization(["view-menu"]), getPagingMenu)
 router.post('/create-menu', authentication, authorization(["create-menu"]), createMenu);

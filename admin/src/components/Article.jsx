@@ -12,15 +12,15 @@ import { PlusOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import {
-  deleteArticleCategory,
-  getArticleCategory,
-  searchArticleCategory,
-} from "../services/articleCategory.js";
+  deleteArticle,
+  getArticle,
+  searchArticle,
+} from "../services/article.js";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
-const ArticleCategory = () => {
-  const [articleCategories, setArticleCategories] = useState([]);
+const Article = () => {
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(1);
@@ -32,8 +32,8 @@ const ArticleCategory = () => {
   const [searchPageIndex, setSearchPageIndex] = useState(1);
   const navigate = useNavigate();
 
-  const handleOpenEdit = (id) => {
-    navigate(`/article-category/edit/${id}`);
+  const handleOpenEdit = (articleId) => {
+    navigate(`/article/edit/${articleId}`);
   };
 
   const columns = [
@@ -50,10 +50,11 @@ const ArticleCategory = () => {
       render: (thumbnail) => <Image src={thumbnail} style={{ width: 50 }} />,
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      align: "justify",
+      width: 300,
       render: (text) => text || "Loading...",
     },
     {
@@ -64,18 +65,31 @@ const ArticleCategory = () => {
       render: (text) => text || "Loading...",
     },
     {
-      title: "Menu",
-      dataIndex: "menuId",
-      key: "menuId",
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       align: "center",
-      render: (menuId) => (menuId ? menuId.title : "Loading..."),
+      render: (status) => (status ? "Active" : "Inactive"),
+    },
+    {
+      title: "Popular",
+      dataIndex: "popular",
+      key: "popular",
+      align: "center",
+      render: (popular) => (popular ? "Active" : "Inactive"),
+    },
+    {
+      title: "Author",
+      dataIndex: "author",
+      key: "author",
+      align: "center",
+      render: (author) => (author ? author.name : "Loading..."),
     },
     {
       title: "CreatedAt",
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
-      width: 100,
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       render: (text) => text || "Loading...",
     },
@@ -84,7 +98,6 @@ const ArticleCategory = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       align: "center",
-      width: 100,
       sorter: (a, b) => new Date(a.updatedAt) - new Date(b.updatedAt),
       render: (text) => text || "Loading...",
     },
@@ -101,8 +114,8 @@ const ArticleCategory = () => {
             />
             <Popconfirm
               placement="left"
-              title="Delete article category"
-              description="Are you sure you want to delete article category?"
+              title="Delete article  "
+              description="Are you sure you want to delete article  ?"
               okText="Ok"
               cancelText="Cancel"
               style={{ cursor: "pointer" }}
@@ -116,11 +129,11 @@ const ArticleCategory = () => {
     },
   ];
 
-  const getArticleCategories = useCallback(async () => {
+  const getArticles = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getArticleCategory({ pageSize, pageIndex });
-      setArticleCategories(result.data.articleCategories);
+      const result = await getArticle({ pageSize, pageIndex });
+      setArticles(result.data.articles);
       setTotalPages(result.data.totalPages);
       setTotalDoc(result.data.count);
     } catch (error) {
@@ -131,14 +144,14 @@ const ArticleCategory = () => {
   }, [pageSize, pageIndex]);
 
   useEffect(() => {
-    getArticleCategories();
-  }, [getArticleCategories]);
+    getArticles();
+  }, [getArticles]);
 
   const handlePaginationChange = (pageIndex, pageSize) => {
     if (searchQuery.trim() === "") {
       setPageSize(pageSize);
       setPageIndex(pageIndex);
-      getArticleCategories();
+      getArticles();
     } else {
       setSearchPageIndex(pageIndex);
       handleSearch(pageSize);
@@ -149,8 +162,8 @@ const ArticleCategory = () => {
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      const result = await deleteArticleCategory(id);
-      setArticleCategories(articleCategories.filter((item) => item._id !== id));
+      const result = await deleteArticle(id);
+      setArticles(articles.filter((item) => item._id !== id));
       toast.success(result.data.message);
     } catch (error) {
       toast.error(error.response.data.message);
@@ -163,8 +176,8 @@ const ArticleCategory = () => {
     try {
       setLoading(true);
       if (searchQuery.trim() !== "") {
-        const response = await searchArticleCategory(searchQuery);
-        setSearchResults(response.data.articleCategories);
+        const response = await searchArticle(searchQuery);
+        setSearchResults(response.data.articles);
         setSearchTotalDoc(response.data.count);
         setSearchPageIndex(1);
       }
@@ -174,13 +187,12 @@ const ArticleCategory = () => {
       setLoading(false);
     }
   };
-
   // Clear search
   const handleClearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
     setSearchPageIndex(1);
-    getArticleCategories();
+    getArticles();
   };
 
   return (
@@ -196,7 +208,7 @@ const ArticleCategory = () => {
               title: "Blogs",
             },
             {
-              title: "Article Category",
+              title: "Article",
             },
           ]}
         />
@@ -221,7 +233,7 @@ const ArticleCategory = () => {
             size="large"
             icon={<PlusOutlined />}
             onClick={() => {
-              navigate("/article-category/create");
+              navigate("/article/create");
             }}
           >
             Create new
@@ -229,14 +241,12 @@ const ArticleCategory = () => {
         </div>
       </div>
       <Table
-        className="shadow-md mt-2"
+        className="shadow-md mt-2 overflow-x-auto"
         loading={loading}
         columns={columns}
-        dataSource={
-          searchResults.length > 0 ? searchResults : articleCategories
-        }
+        dataSource={searchResults.length > 0 ? searchResults : articles}
         pagination={false}
-        scroll={{ x: 1000 }}
+        scroll={{ x: "max-content" }}
       />
       <Pagination
         className="mt-5 pb-5 float-right"
@@ -251,4 +261,4 @@ const ArticleCategory = () => {
   );
 };
 
-export default ArticleCategory;
+export default Article;

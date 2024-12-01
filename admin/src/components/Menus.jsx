@@ -247,6 +247,7 @@ const Menus = () => {
           <Input
             placeholder="Search..."
             className="w-full lg:w-1/2"
+            size="large"
             value={searchQuery}
             onChange={(e) => {
               const value = e.target.value;
@@ -260,10 +261,11 @@ const Menus = () => {
           />
           <Button
             type="primary"
+            size="large"
             icon={<PlusOutlined />}
             onClick={() => setModalCreateMenu(true)}
           >
-            Create menu
+            Create new
           </Button>
         </div>
       </div>

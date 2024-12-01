@@ -42,7 +42,7 @@ const Roles = () => {
   const [searchPageIndex, setSearchPageIndex] = useState(1);
 
   const options = [
-    { value: "name", label: "Role Name" },
+    { value: "name", label: "Role name" },
     { value: "permissions", label: "Permissions" },
   ];
 
@@ -253,12 +253,14 @@ const Roles = () => {
         <div className="flex flex-col lg:flex-row w-full gap-2 lg:justify-between">
           <Space.Compact className="w-full lg:w-[32rem] relative">
             <Select
-              defaultValue="Role Name"
+              size="large"
+              defaultValue="Role name"
               options={options}
               onChange={(value) => setSelectedOption(value)}
             />
             <Input
               placeholder="Search..."
+              size="large"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onPressEnter={handleSearch}
@@ -272,10 +274,11 @@ const Roles = () => {
           </Space.Compact>
           <Button
             type="primary"
+            size="large"
             icon={<PlusOutlined />}
             onClick={() => setModalCreateRole(true)}
           >
-            Create role
+            Create new
           </Button>
         </div>
       </div>

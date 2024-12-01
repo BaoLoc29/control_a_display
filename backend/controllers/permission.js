@@ -73,7 +73,7 @@ export const getPagingPermission = async (req, res) => {
 }
 export const getAllPermission = async (req, res) => {
     try {
-        const permissions = await Permission.find()
+        const permissions = await Permission.find().sort({ createdAt: "desc" })
         return res.status(200).json({
             permissions
         })

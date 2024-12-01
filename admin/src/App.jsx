@@ -17,6 +17,9 @@ import EditArticleCategory from "./components/Blog/EditArticleCategory/index.jsx
 import CreateArticleCategory from "./components/Blog/CreateArticleCategory/index.jsx";
 import Menus from "./components/Menus.jsx";
 import Permissions from "./components/Permissions.jsx";
+import Article from "./components/Article.jsx";
+import CreateArticle from "./components/Blog/CreateArticle/index.jsx";
+import EditArticle from './components/Blog/EditArticle/index.jsx';
 
 const App = () => {
   const user = useSelector((state) => state.users.user);
@@ -60,6 +63,7 @@ const App = () => {
               <Route path="permissions" element={<Permissions />} />
               <Route path="menus" element={<Menus />} />
               <Route path="article-category" element={<ArticleCategory />} />
+              <Route path="article" element={<Article />} />
               <Route
                 path="article-category/edit/:articleCategoryId"
                 element={<EditArticleCategory />}
@@ -68,6 +72,8 @@ const App = () => {
                 path="article-category/create"
                 element={<CreateArticleCategory />}
               />
+              <Route path="article/create" element={<CreateArticle />} />
+              <Route path="article/edit/:articleId" element={<EditArticle />} />
             </Route>
           </Route>
         )}

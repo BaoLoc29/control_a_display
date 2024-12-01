@@ -4,7 +4,7 @@ import toSlug from '../utils/toSlug.js';
 
 export const createMenu = async (req, res) => {
     try {
-        const { title, slug: useSlug, description, type } = req.body
+        const { title, slug: useSlug, description, type, articleCategoryId } = req.body
         const slug = useSlug ? toSlug(useSlug) : toSlug(title);
 
         // Validate input data
@@ -29,7 +29,7 @@ export const createMenu = async (req, res) => {
                 "string.empty": "Type cannot be empty",
                 "any.required": "Type is required",
                 "any.only": "Type must be either 'Option' or 'Link'"
-            })
+            }),
         })
 
         const { error } = createSchema.validate({ title, slug, description, type });
@@ -47,7 +47,7 @@ export const createMenu = async (req, res) => {
             });
         }
 
-        const menu = await Menu.create({ title, slug, description, type })
+        const menu = await Menu.create({ title, slug, description, type, articleCategoryId })
         return res.status(201).json({
             message: "Created successfully!",
             data: menu
@@ -155,6 +155,14 @@ export const searchMenu = async (req, res) => {
         if (menus.length === 0) {
             return res.status(404).json({ message: "Menu not found!" })
         }
+        return res.status(200).json({ menus })
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}
+export const getAllMenu = async (req, res) => {
+    try {
+        const menus = await Menu.find().sort({ createdAt: "desc" })
         return res.status(200).json({ menus })
     } catch (error) {
         return res.status(500).json({ message: error.message })

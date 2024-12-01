@@ -107,7 +107,7 @@ const ModalCreateMenu = ({
           >
             <Select placeholder="Type" size="large">
               <Select.Option value="Link">Link</Select.Option>
-              <Select.Option value="SubMenu">SubMenu</Select.Option>
+              <Select.Option value="Option">Option</Select.Option>
             </Select>
           </Form.Item>
 

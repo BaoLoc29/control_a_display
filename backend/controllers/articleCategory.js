@@ -1,10 +1,16 @@
 import ArticleCategory from "../models/articleCategory.js";
+import Menu from "../models/menu.js";
 import joi from "joi";
 import toSlug from '../utils/toSlug.js';
 import handleUpload from "../utils/cloundinary.js";
 
 export const createArticleCategory = async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Thumbnail image is required!",
+            });
+        }
         // Convert the image to base64
         const b64 = Buffer.from(req.file.buffer).toString("base64");
         let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
@@ -12,7 +18,7 @@ export const createArticleCategory = async (req, res) => {
         // Upload the image to Cloudinary
         const result = await handleUpload(dataURI);
 
-        const { name, seo_title, seo_keywords, seo_description, slug: useSlug } = req.body;
+        const { name, seo_title, seo_keywords, seo_description, slug: useSlug, menuId } = req.body;
         const slug = useSlug ? toSlug(useSlug) : toSlug(name);
         const thumbnail = result.url;
 
@@ -35,16 +41,12 @@ export const createArticleCategory = async (req, res) => {
                 'string.min': 'SEO Description must be at least 50 characters long!',
                 'string.max': 'SEO Description must be at most 160 characters long!'
             }),
+            menuId: joi.string().required().messages({
+                'string.empty': 'menuId is required!',
+            }),
         });
 
-        // Check if the file exists
-        if (!req.file) {
-            return res.status(400).json({
-                message: "Thumbnail image is required!",
-            });
-        }
-
-        const { error } = createSchema.validate({ name, slug, seo_title, seo_keywords, seo_description });
+        const { error } = createSchema.validate({ name, slug, seo_title, seo_keywords, seo_description, menuId });
         if (error) {
             return res.status(400).json({
                 message: error.details.map((e) => e.message),
@@ -59,8 +61,20 @@ export const createArticleCategory = async (req, res) => {
             });
         }
 
+        // Kiểm tra xem menu có tồn tại không (nếu cần)
+        const findMenu = await Menu.findById(menuId);
+        if (!findMenu) {
+            return res.status(400).json({
+                message: "Menu not found!",
+            });
+        }
+
         // Create a new article category
-        const articleCategory = await ArticleCategory.create({ name, slug, seo_title, seo_keywords, seo_description, thumbnail });
+        const articleCategory = await ArticleCategory.create({ name, slug, seo_title, seo_keywords, seo_description, thumbnail, menuId });
+
+        // Cập nhật Menu với articleCategoryId
+        findMenu.articleCategoryId.push(articleCategory._id);
+        await findMenu.save();
 
         return res.status(201).json({
             message: "Created successfully!",
@@ -74,7 +88,7 @@ export const createArticleCategory = async (req, res) => {
 export const editArticleCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, seo_title, seo_keywords, seo_description, slug: useSlug } = req.body;
+        const { name, seo_title, seo_keywords, seo_description, slug: useSlug, menuId } = req.body;
         const slug = useSlug ? toSlug(useSlug) : toSlug(name);
 
         // Validate input data
@@ -96,15 +110,25 @@ export const editArticleCategory = async (req, res) => {
                 'string.min': 'SEO Description must be at least 50 characters long!',
                 'string.max': 'SEO Description must be at most 160 characters long!'
             }),
+            menuId: joi.string().required().messages({
+                'string.empty': 'menuId is required!',
+            }),
         });
 
-        const { error } = editSchema.validate({ name, slug, seo_title, seo_keywords, seo_description });
+        const { error } = editSchema.validate({ name, slug, seo_title, seo_keywords, seo_description, menuId });
         if (error) {
             return res.status(400).json({
                 message: error.details.map((e) => e.message),
             });
         }
 
+        // Lấy thông tin articleCategory hiện tại
+        const existingCategory = await ArticleCategory.findById(id);
+        if (!existingCategory) {
+            return res.status(404).json({ message: "Article category not found!" });
+        }
+
+        const oldMenuId = existingCategory.menuId;
         // Nếu có tệp (ảnh) thì upload lên Cloudinary
         let thumbnail;
         if (req.file) {
@@ -114,15 +138,15 @@ export const editArticleCategory = async (req, res) => {
             thumbnail = result.url;
         }
         // Kiểm tra nếu slug đã tồn tại trong cơ sở dữ liệu (trừ bản ghi hiện tại)
-        const existingCategory = await ArticleCategory.findOne({ slug, _id: { $ne: id } });
-        if (existingCategory) {
+        const duplicateSlug = await ArticleCategory.findOne({ slug, _id: { $ne: id } });
+        if (duplicateSlug) {
             return res.status(400).json({
                 message: "Slug already exists!",
             });
         }
 
         // Tạo object để cập nhật
-        const updatedData = { name, seo_title, seo_keywords, seo_description, slug };
+        const updatedData = { name, seo_title, seo_keywords, seo_description, slug, menuId };
 
         // Nếu có ảnh thì thêm ảnh vào dữ liệu cần cập nhật
         if (thumbnail) {
@@ -136,6 +160,34 @@ export const editArticleCategory = async (req, res) => {
             return res.status(404).json({
                 message: "Article category not found!",
             });
+        }
+
+        // Cập nhật Menu với articleCategoryId mới (nếu chưa có)
+        const findMenu = await Menu.findById(menuId);
+        if (!findMenu) {
+            return res.status(404).json({ message: "Menu not found!" });
+        }
+
+        // Xóa articleCategoryId khỏi menuId cũ nếu khác menuId mới
+        if (oldMenuId && oldMenuId !== menuId) {
+            const oldMenu = await Menu.findById(oldMenuId);
+            if (oldMenu) {
+                oldMenu.articleCategoryId = oldMenu.articleCategoryId.filter(
+                    (categoryId) => categoryId.toString() !== id
+                );
+                await oldMenu.save();
+            }
+        }
+
+        // Thêm articleCategoryId vào menuId mới
+        const newMenu = await Menu.findById(menuId);
+        if (!newMenu) {
+            return res.status(404).json({ message: "Menu not found!" });
+        }
+
+        if (!newMenu.articleCategoryId.includes(updatedCategory._id)) {
+            newMenu.articleCategoryId.push(updatedCategory._id);
+            await newMenu.save();
         }
 
         return res.status(200).json({
@@ -153,6 +205,7 @@ export const getPagingArticleCategory = async (req, res) => {
         const articleCategories = await ArticleCategory.find()
             .skip(query.pageSize * query.pageIndex - query.pageSize)
             .limit(query.pageSize).sort({ createdAt: "desc" })
+            .populate('menuId', 'title')
 
         const countArticleCategories = await ArticleCategory.countDocuments()
         const totalPage = Math.ceil(countArticleCategories / query.pageSize)
@@ -200,4 +253,12 @@ export const searchArticleCategory = async (req, res) => {
         return res.status(500).json({ message: error.message })
     }
 }
-
+export const getAllArticleCategory = async (req, res) => {
+    try {
+        const articleCategories = await ArticleCategory.find()
+            .sort({ createdAt: "desc" })
+        return res.status(200).json({ articleCategories })
+    } catch (error) {
+        return res.status(500).json({ message: error.message })
+    }
+}

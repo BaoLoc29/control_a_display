@@ -18,11 +18,15 @@ const getMenuById = (menuId) => {
 const searchMenu = (searchQuery) => {
     return axiosInstanceAuth.get('/menu/search-menu', { params: { title: searchQuery } })
 }
+const getAllMenu = () => {
+    return axiosInstanceAuth.get('/menu/get-all-menu')
+}
 export {
     getPagingMenu,
     createMenu,
     getMenuById,
     deleteMenu,
     editMenu,
-    searchMenu
+    searchMenu,
+    getAllMenu
 }

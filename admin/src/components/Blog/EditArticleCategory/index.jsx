@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
-import { Button, Form, Image, Input } from "antd";
+import { Button, Form, Image, Input, Select } from "antd";
+import { getAllMenu } from "../../../services/menu";
 import {
   editArticleCategory,
   getArticleCategoryById,
@@ -11,6 +12,7 @@ import toast from "react-hot-toast";
 const EditArticleCategory = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [menus, setMenus] = useState([]);
   const { articleCategoryId } = useParams();
   const navigate = useNavigate();
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -25,6 +27,7 @@ const EditArticleCategory = () => {
         seo_keywords: result.data.articleCategory.seo_keywords,
         seo_title: result.data.articleCategory.seo_title,
         seo_description: result.data.articleCategory.seo_description,
+        menuId: result.data.articleCategory.menuId,
       });
       if (result.data.articleCategory.thumbnail) {
         form.setFieldsValue({
@@ -65,6 +68,7 @@ const EditArticleCategory = () => {
     data.append("seo_keywords", values.seo_keywords);
     data.append("seo_title", values.seo_title);
     data.append("seo_description", values.seo_description);
+    data.append("menuId", values.menuId);
     if (thumbnailFile) {
       data.append("thumbnail", thumbnailFile);
     }
@@ -80,6 +84,22 @@ const EditArticleCategory = () => {
       setLoading(false);
     }
   };
+
+  const getMenu = useCallback(async () => {
+    try {
+      setLoading(true);
+      const result = await getAllMenu();
+      setMenus(result.data.menus);
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    getMenu();
+  }, [getMenu]);
 
   return (
     <div>
@@ -129,6 +149,31 @@ const EditArticleCategory = () => {
                 ]}
               >
                 <Input placeholder="Article category slug" size="large" />
+              </Form.Item>
+            </div>
+
+            <div className="m-5">
+              <label className="block text-sm text-neutral-600 font-bold mb-2">
+                Menu: <span className="text-red-500">*</span>
+              </label>
+              <Form.Item
+                name="menuId"
+                style={{ marginBottom: 10 }}
+                rules={[
+                  {
+                    required: true,
+                    message: "Menu ID cannot be empty!",
+                  },
+                ]}
+              >
+                {/* <Input placeholder="Menu" size="large" /> */}
+                <Select placeholder="Menu article category" size="large">
+                  {menus.map((menuId) => (
+                    <Select.Option key={menuId._id} value={menuId.id}>
+                      {menuId.title}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </div>
 

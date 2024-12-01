@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
-const ArticleCategory = new mongoose.Schema({
-    name: {
+const Article = new mongoose.Schema({
+    title: {
         type: String,
         required: true
     },
@@ -9,7 +9,7 @@ const ArticleCategory = new mongoose.Schema({
         type: String,
         required: true
     },
-    seo_title: {
+    summary: {
         type: String,
         required: true
     },
@@ -17,7 +17,15 @@ const ArticleCategory = new mongoose.Schema({
         type: String,
         required: true
     },
+    seo_title: {
+        type: String,
+        required: true
+    },
     seo_description: {
+        type: String,
+        required: true
+    },
+    description: {
         type: String,
         required: true
     },
@@ -25,19 +33,25 @@ const ArticleCategory = new mongoose.Schema({
         type: String,
         required: true
     },
-    menuId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'menus',
-        required: true
+    status: {
+        type: Boolean,
+        default: false
     },
-    articleId: [{
+    popular: {
+        type: Boolean,
+        default: false
+    },
+    articleCategoryId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'articles',
-        required: true
-    }]
+        ref: 'articleCategories'
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users'
+    }
 }, { timestamps: true })
 // Định dạng lại createdAt và updatedAt khi trả về JSON
-ArticleCategory.methods.toJSON = function () {
+Article.methods.toJSON = function () {
     const obj = this.toObject();
 
     obj.createdAt = this.createdAt.toLocaleString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" });
@@ -45,4 +59,4 @@ ArticleCategory.methods.toJSON = function () {
 
     return obj;
 }
-export default mongoose.model("articleCategories", ArticleCategory)
+export default mongoose.model("articles", Article)

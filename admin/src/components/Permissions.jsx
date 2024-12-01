@@ -221,6 +221,7 @@ const Permissions = () => {
         <div className="flex flex-col lg:flex-row w-full gap-2 lg:justify-between">
           <Input
             placeholder="Search..."
+            size="large"
             className="w-full lg:w-1/2"
             value={searchQuery}
             onChange={(e) => {
@@ -235,6 +236,7 @@ const Permissions = () => {
           />
           <Button
             type="primary"
+            size="large"
             icon={<PlusOutlined />}
             onClick={() => setModalPermission(true)}
           >
