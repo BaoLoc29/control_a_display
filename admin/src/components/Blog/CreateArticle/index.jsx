@@ -91,15 +91,14 @@ const CreateArticle = () => {
         <MdArrowForwardIos />
         <h1 className="text-neutral-600 text-xl">Create article</h1>
       </div>
-
-      <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
-        <div className="bg-white w-full rounded-md shadow-md min-h-min">
-          <Form
-            form={form}
-            name="Article Form1"
-            layout="vertical"
-            onFinish={handleCreate}
-          >
+      <Form
+        form={form}
+        name="Article Form1"
+        layout="vertical"
+        onFinish={handleCreate}
+      >
+        <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
+          <div className="bg-white w-full rounded-md shadow-md min-h-min">
             <div className="m-5">
               <label className="block text-sm text-neutral-600 font-bold mb-2">
                 Title: <span className="text-red-500">*</span>
@@ -219,115 +218,116 @@ const CreateArticle = () => {
                 />
               </Form.Item>
             </div>
-          </Form>
+          </div>
+
+          <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-full flex flex-col justify-between p-5">
+            <Form form={form} layout="vertical" onFinish={handleCreate}>
+              <div>
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Upload Thumbnail Image:{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="thumbnail"
+                  rules={[
+                    { required: true, message: "Thumbnail image is required!" },
+                  ]}
+                >
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    size="large"
+                    className="mb-4"
+                    onChange={handleThumbnailChange}
+                    onBlur={() => form.validateFields(["thumbnail"])}
+                  />
+                  <div className="flex justify-center items-center rounded-lg">
+                    {form.getFieldValue("thumbnail") ? (
+                      <Image
+                        style={{
+                          width: "380px",
+                          height: "210px",
+                          objectFit: "cover",
+                        }}
+                        src={form.getFieldValue("thumbnail")}
+                        alt="Uploaded Thumbnail"
+                      />
+                    ) : (
+                      <img
+                        src="https://placehold.co/840x310"
+                        alt="placeholder"
+                        style={{
+                          width: "380px",
+                          height: "210px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                  </div>
+                </Form.Item>
+              </div>
+
+              <div>
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Article category: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="articleCategoryId"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Category cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Select
+                    size="large"
+                    options={articleCategories.map((cat) => ({
+                      label: cat.name,
+                      value: cat._id,
+                    }))}
+                  />
+                </Form.Item>
+              </div>
+
+              <div>
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Status:
+                </label>
+                <Form.Item
+                  name="status"
+                  initialValue={false}
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+              </div>
+
+              <div>
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Popular:
+                </label>
+                <Form.Item
+                  name="popular"
+                  initialValue={false}
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+              </div>
+            </Form>
+            <Button
+              loading={loading}
+              type="primary"
+              onClick={() => form.submit()}
+              className="w-full"
+              size="large"
+            >
+              Create
+            </Button>
+          </div>
         </div>
-
-        <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-full flex flex-col justify-between p-5">
-          <Form form={form} layout="vertical" onFinish={handleCreate}>
-            <div>
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Upload Thumbnail Image: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="thumbnail"
-                rules={[
-                  { required: true, message: "Thumbnail image is required!" },
-                ]}
-              >
-                <Input
-                  type="file"
-                  accept="image/*"
-                  size="large"
-                  className="mb-4"
-                  onChange={handleThumbnailChange}
-                  onBlur={() => form.validateFields(["thumbnail"])}
-                />
-                <div className="flex justify-center items-center rounded-lg">
-                  {form.getFieldValue("thumbnail") ? (
-                    <Image
-                      style={{
-                        width: "380px",
-                        height: "210px",
-                        objectFit: "cover",
-                      }}
-                      src={form.getFieldValue("thumbnail")}
-                      alt="Uploaded Thumbnail"
-                    />
-                  ) : (
-                    <img
-                      src="https://placehold.co/840x310"
-                      alt="placeholder"
-                      style={{
-                        width: "380px",
-                        height: "210px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                </div>
-              </Form.Item>
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Article category: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="articleCategoryId"
-                rules={[
-                  {
-                    required: true,
-                    message: "Category cannot be empty!",
-                  },
-                ]}
-              >
-                <Select
-                  size="large"
-                  options={articleCategories.map((cat) => ({
-                    label: cat.name,
-                    value: cat._id,
-                  }))}
-                />
-              </Form.Item>
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Status:
-              </label>
-              <Form.Item
-                name="status"
-                initialValue={false}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Popular:
-              </label>
-              <Form.Item
-                name="popular"
-                initialValue={false}
-                valuePropName="checked"
-              >
-                <Switch />
-              </Form.Item>
-            </div>
-          </Form>
-          <Button
-            loading={loading}
-            type="primary"
-            onClick={() => form.submit()}
-            className="w-full"
-            size="large"
-          >
-            Create
-          </Button>
-        </div>
-      </div>
+      </Form>
     </div>
   );
 };

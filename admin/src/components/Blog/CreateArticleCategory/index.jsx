@@ -76,15 +76,14 @@ const CreateArticleCategory = () => {
         <MdArrowForwardIos />
         <h1 className="text-neutral-600 text-xl">Create Article Category</h1>
       </div>
-
-      <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
-        <div className="bg-white w-full rounded-md shadow-md min-h-min">
-          <Form
-            form={form}
-            name="ArticleCategoryForm1"
-            layout="vertical"
-            onFinish={handleCreateCategory}
-          >
+      <Form
+        form={form}
+        name="ArticleCategoryForm1"
+        layout="vertical"
+        onFinish={handleCreateCategory}
+      >
+        <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
+          <div className="bg-white w-full rounded-md shadow-md min-h-min">
             <div className="m-5">
               <label className="block text-sm text-neutral-600 font-bold mb-2">
                 Name: <span className="text-red-500">*</span>
@@ -219,63 +218,63 @@ const CreateArticleCategory = () => {
                 />
               </Form.Item>
             </div>
-          </Form>
-        </div>
+          </div>
 
-        <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-[25rem] flex flex-col justify-between p-5">
-          <label className="block text-sm text-neutral-600 font-bold mb-2">
-            Upload Thumbnail Image: <span className="text-red-500">*</span>
-          </label>
-          <Form.Item
-            name="thumbnail"
-            rules={[
-              { required: true, message: "Thumbnail image is required!" },
-            ]}
-          >
-            <Input
-              type="file"
-              accept="image/*"
+          <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-[25rem] flex flex-col justify-between p-5">
+            <label className="block text-sm text-neutral-600 font-bold mb-2">
+              Upload Thumbnail Image: <span className="text-red-500">*</span>
+            </label>
+            <Form.Item
+              name="thumbnail"
+              rules={[
+                { required: true, message: "Thumbnail image is required!" },
+              ]}
+            >
+              <Input
+                type="file"
+                accept="image/*"
+                size="large"
+                className="mb-4"
+                onChange={handleThumbnailChange}
+                onBlur={() => form.validateFields(["thumbnail"])}
+              />
+              <div className="flex justify-center items-center rounded-lg h-[13rem]">
+                {form.getFieldValue("thumbnail") ? (
+                  <Image
+                    style={{
+                      width: "380px",
+                      height: "210px",
+                      objectFit: "cover",
+                    }}
+                    src={form.getFieldValue("thumbnail")}
+                    alt="Uploaded Thumbnail"
+                  />
+                ) : (
+                  <img
+                    src="https://placehold.co/600x400"
+                    alt="placeholder"
+                    style={{
+                      width: "380px",
+                      height: "210px",
+                      objectFit: "cover",
+                    }}
+                    className="rounded-lg"
+                  />
+                )}
+              </div>
+            </Form.Item>
+            <Button
+              loading={loading}
+              type="primary"
+              onClick={() => form.submit()}
+              className="w-full"
               size="large"
-              className="mb-4"
-              onChange={handleThumbnailChange}
-              onBlur={() => form.validateFields(["thumbnail"])}
-            />
-            <div className="flex justify-center items-center rounded-lg h-[13rem]">
-              {form.getFieldValue("thumbnail") ? (
-                <Image
-                  style={{
-                    width: "380px",
-                    height: "210px",
-                    objectFit: "cover",
-                  }}
-                  src={form.getFieldValue("thumbnail")}
-                  alt="Uploaded Thumbnail"
-                />
-              ) : (
-                <img
-                  src="https://placehold.co/600x400"
-                  alt="placeholder"
-                  style={{
-                    width: "380px",
-                    height: "210px",
-                    objectFit: "cover",
-                  }}
-                  className="rounded-lg"
-                />
-              )}
-            </div>
-          </Form.Item>
-          <Button
-            loading={loading}
-            type="primary"
-            onClick={() => form.submit()}
-            className="w-full"
-            size="large"
-          >
-            Create Category
-          </Button>
+            >
+              Create Category
+            </Button>
+          </div>
         </div>
-      </div>
+      </Form>
     </div>
   );
 };

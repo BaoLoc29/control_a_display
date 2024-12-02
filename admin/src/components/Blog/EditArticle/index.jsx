@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { MdArrowForwardIos } from "react-icons/md";
-import { Button, Form, Image, Input, Select, Switch } from "antd";
+import { Button, Form, Image, Input, Select, Spin, Switch } from "antd";
 import { getAllArticleCategory } from "../../../services/articleCategory.js";
 import { editArticle, getArticleById } from "../../../services/article.js";
 import { toast } from "react-hot-toast";
@@ -124,233 +124,235 @@ const EditArticle = () => {
         <h1 className="text-neutral-600 text-xl">Edit article</h1>
       </div>
 
-      <Form
-        loading={loading}
-        form={form}
-        name="Article Form1"
-        layout="vertical"
-        onFinish={handleEdit}
-      >
-        <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
-          <div className="bg-white w-full rounded-md shadow-md min-h-min">
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Title: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="title"
-                style={{ marginBottom: 10 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "Article title cannot be empty!",
-                  },
-                ]}
-              >
-                <Input size="large" />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Slug: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="slug"
-                style={{ marginBottom: 10 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "Slug cannot be empty!",
-                  },
-                ]}
-              >
-                <Input size="large" />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Summary: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="summary"
-                style={{ marginBottom: 10 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "Summary cannot be empty!",
-                  },
-                ]}
-              >
-                <Input.TextArea size="large" rows={4} />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                SEO Keywords: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="seo_keywords"
-                style={{ marginBottom: 10 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "SEO keywords cannot be empty!",
-                  },
-                ]}
-              >
-                <Input size="large" />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                SEO Title: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item
-                name="seo_title"
-                style={{ marginBottom: 10 }}
-                rules={[
-                  {
-                    required: true,
-                    message: "SEO title cannot be empty!",
-                  },
-                ]}
-              >
-                <Input size="large" />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                SEO Description: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item name="seo_description" style={{ marginBottom: 10 }}>
-                <CustomEditor
-                  value={form.getFieldValue("seo_description")}
-                  onChange={(content) =>
-                    form.setFieldsValue({ seo_description: content })
-                  }
-                  height={300}
-                />
-              </Form.Item>
-            </div>
-
-            <div className="m-5">
-              <label className="block text-sm text-neutral-600 font-bold mb-2">
-                Description: <span className="text-red-500">*</span>
-              </label>
-              <Form.Item name="description" style={{ marginBottom: 10 }}>
-                <CustomEditor
-                  value={form.getFieldValue("description")}
-                  onChange={(content) =>
-                    form.setFieldsValue({ description: content })
-                  }
-                  height={600}
-                />
-              </Form.Item>
-            </div>
-          </div>
-
-          <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-full flex flex-col justify-between p-5">
-            <label className="block text-sm text-neutral-600 font-bold mb-2">
-              Upload Thumbnail Image: <span className="text-red-500">*</span>
-            </label>
-            <Form.Item
-              name="thumbnail"
-              rules={[
-                { required: true, message: "Thumbnail image is required!" },
-              ]}
-            >
-              <Input
-                type="file"
-                accept="image/*"
-                size="large"
-                className="mb-4"
-                onChange={handleThumbnailChange}
-                onBlur={() => form.validateFields(["thumbnail"])}
-              />
-              <div className="flex justify-center items-center rounded-lg">
-                {thumbnailUrl ? (
-                  <Image
-                    style={{
-                      width: "380px",
-                      height: "210px",
-                      objectFit: "cover",
-                    }}
-                    src={thumbnailUrl}
-                    alt="Uploaded Thumbnail"
-                  />
-                ) : (
-                  <img
-                    src="https://placehold.co/840x310"
-                    alt="placeholder"
-                    style={{
-                      width: "380px",
-                      height: "210px",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
+      <Spin spinning={loading}>
+        <Form
+          loading={loading}
+          form={form}
+          name="Article Form1"
+          layout="vertical"
+          onFinish={handleEdit}
+        >
+          <div className="flex flex-col lg:flex-row w-full gap-5 lg:justify-between mt-4">
+            <div className="bg-white w-full rounded-md shadow-md min-h-min">
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Title: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="title"
+                  style={{ marginBottom: 10 }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Article title cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Input size="large" />
+                </Form.Item>
               </div>
-            </Form.Item>
 
-            <label className="block text-sm text-neutral-600 font-bold mb-2">
-              Article category: <span className="text-red-500">*</span>
-            </label>
-            <Form.Item
-              name="articleCategoryId"
-              rules={[
-                {
-                  required: true,
-                  message: "Category cannot be empty!",
-                },
-              ]}
-            >
-              <Select
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Slug: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="slug"
+                  style={{ marginBottom: 10 }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Slug cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Input size="large" />
+                </Form.Item>
+              </div>
+
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Summary: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="summary"
+                  style={{ marginBottom: 10 }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Summary cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Input.TextArea size="large" rows={4} />
+                </Form.Item>
+              </div>
+
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  SEO Keywords: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="seo_keywords"
+                  style={{ marginBottom: 10 }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "SEO keywords cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Input size="large" />
+                </Form.Item>
+              </div>
+
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  SEO Title: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item
+                  name="seo_title"
+                  style={{ marginBottom: 10 }}
+                  rules={[
+                    {
+                      required: true,
+                      message: "SEO title cannot be empty!",
+                    },
+                  ]}
+                >
+                  <Input size="large" />
+                </Form.Item>
+              </div>
+
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  SEO Description: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item name="seo_description" style={{ marginBottom: 10 }}>
+                  <CustomEditor
+                    value={form.getFieldValue("seo_description")}
+                    onChange={(content) =>
+                      form.setFieldsValue({ seo_description: content })
+                    }
+                    height={300}
+                  />
+                </Form.Item>
+              </div>
+
+              <div className="m-5">
+                <label className="block text-sm text-neutral-600 font-bold mb-2">
+                  Description: <span className="text-red-500">*</span>
+                </label>
+                <Form.Item name="description" style={{ marginBottom: 10 }}>
+                  <CustomEditor
+                    value={form.getFieldValue("description")}
+                    onChange={(content) =>
+                      form.setFieldsValue({ description: content })
+                    }
+                    height={600}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="bg-white lg:w-[40rem] rounded-lg shadow-md h-full flex flex-col justify-between p-5">
+              <label className="block text-sm text-neutral-600 font-bold mb-2">
+                Upload Thumbnail Image: <span className="text-red-500">*</span>
+              </label>
+              <Form.Item
+                name="thumbnail"
+                rules={[
+                  { required: true, message: "Thumbnail image is required!" },
+                ]}
+              >
+                <Input
+                  type="file"
+                  accept="image/*"
+                  size="large"
+                  className="mb-4"
+                  onChange={handleThumbnailChange}
+                  onBlur={() => form.validateFields(["thumbnail"])}
+                />
+                <div className="flex justify-center items-center rounded-lg">
+                  {thumbnailUrl ? (
+                    <Image
+                      style={{
+                        width: "380px",
+                        height: "210px",
+                        objectFit: "cover",
+                      }}
+                      src={thumbnailUrl}
+                      alt="Uploaded Thumbnail"
+                    />
+                  ) : (
+                    <img
+                      src="https://placehold.co/840x310"
+                      alt="placeholder"
+                      style={{
+                        width: "380px",
+                        height: "210px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                </div>
+              </Form.Item>
+
+              <label className="block text-sm text-neutral-600 font-bold mb-2">
+                Article category: <span className="text-red-500">*</span>
+              </label>
+              <Form.Item
+                name="articleCategoryId"
+                rules={[
+                  {
+                    required: true,
+                    message: "Category cannot be empty!",
+                  },
+                ]}
+              >
+                <Select
+                  size="large"
+                  options={articleCategories.map((cat) => ({
+                    label: cat.name,
+                    value: cat._id,
+                  }))}
+                />
+              </Form.Item>
+
+              <label className="block text-sm text-neutral-600 font-bold mb-2">
+                Status:
+              </label>
+              <Form.Item
+                name="status"
+                initialValue={false}
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+
+              <label className="block text-sm text-neutral-600 font-bold mb-2">
+                Popular:
+              </label>
+              <Form.Item
+                name="popular"
+                initialValue={false}
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+              <Button
+                loading={loading}
+                type="primary"
+                onClick={() => form.submit()}
+                className="w-full"
                 size="large"
-                options={articleCategories.map((cat) => ({
-                  label: cat.name,
-                  value: cat._id,
-                }))}
-              />
-            </Form.Item>
-
-            <label className="block text-sm text-neutral-600 font-bold mb-2">
-              Status:
-            </label>
-            <Form.Item
-              name="status"
-              initialValue={false}
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
-
-            <label className="block text-sm text-neutral-600 font-bold mb-2">
-              Popular:
-            </label>
-            <Form.Item
-              name="popular"
-              initialValue={false}
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>
-            <Button
-              loading={loading}
-              type="primary"
-              onClick={() => form.submit()}
-              className="w-full"
-              size="large"
-            >
-              Update
-            </Button>
+              >
+                Update
+              </Button>
+            </div>
           </div>
-        </div>
-      </Form>
+        </Form>
+      </Spin>
     </div>
   );
 };
