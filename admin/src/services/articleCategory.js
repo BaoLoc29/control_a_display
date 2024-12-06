@@ -1,4 +1,4 @@
-import { axiosInstanceAuth } from "./index";
+import { axiosInstance, axiosInstanceAuth } from "./index";
 
 const getArticleCategory = ({ pageSize, pageIndex }) => {
     return axiosInstanceAuth.get(`/article-category/get-all?pageSize=${pageSize}&pageIndex=${pageIndex}`);
@@ -19,7 +19,7 @@ const getArticleCategoryById = (articleCategoryId) => {
     return axiosInstanceAuth.get(`/article-category/${articleCategoryId}`)
 }
 const getAllArticleCategory = () => {
-    return axiosInstanceAuth.get('/article-category/get-all-category')
+    return axiosInstance.get('/article-category/get-all-category')
 }
 export {
     getArticleCategory,

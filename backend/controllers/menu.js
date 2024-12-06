@@ -162,7 +162,10 @@ export const searchMenu = async (req, res) => {
 }
 export const getAllMenu = async (req, res) => {
     try {
-        const menus = await Menu.find().sort({ createdAt: "desc" })
+        const menus = await Menu.find().sort({ createdAt: "desc" }).populate({
+            path: "articleCategoryId",
+            select: "name slug",
+        })
         return res.status(200).json({ menus })
     } catch (error) {
         return res.status(500).json({ message: error.message })

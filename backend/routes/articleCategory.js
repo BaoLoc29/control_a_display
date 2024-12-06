@@ -5,7 +5,7 @@ import authentication from "../middlewares/authentication.js"
 import authorization from '../middlewares/authorization.js';
 
 const router = express.Router();
-router.get('/get-all-category', authentication, authorization(["view-article-category"]), getAllArticleCategory)
+router.get('/get-all-category', getAllArticleCategory)
 router.get('/get-all', authentication, authorization(["view-article-category"]), getPagingArticleCategory)
 router.get('/search', authentication, authorization(["view-article-category"]), searchArticleCategory)
 router.get('/:id', authentication, authorization(["view-article-category"]), getArticleCategoryById)
