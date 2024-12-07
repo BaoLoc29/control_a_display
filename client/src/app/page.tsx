@@ -1,19 +1,10 @@
-import Link from "next/link";
+
+import AppHome from "@/components/app.home";
 
 export default function Home() {
   return (
-    <div className="px-32 h-full">
-      <ul>
-        <li>
-          <Link href={"/facebook"}>Facebook</Link>
-        </li>
-        <li>
-          <a href="/youtube">Youtube</a>
-        </li>
-        <li>
-          <a href="/tiktok">Tiktok</a>
-        </li>
-      </ul>
+    <div className="h-full sm:px-32 px-6">
+      <AppHome/>
     </div>
   );
 }
